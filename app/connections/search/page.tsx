@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserPlusIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, CheckIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
@@ -136,48 +136,62 @@ export default function SearchZombieStudentsPage() {
             />
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             {filteredStudents.map((student) => {
               const hasPendingRequest = hasRequest(student.id);
 
               return (
-                <Card key={student.id} padding="lg">
+                <Card 
+                  key={student.id} 
+                  padding="lg"
+                  className="relative border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:border-primary-200 transition-all duration-200"
+                >
+                  {/* Request Sent Badge - Corner */}
+                  {hasPendingRequest && (
+                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm z-10 bg-warning-100 text-warning-700 border border-warning-200">
+                      Sent
+                    </span>
+                  )}
+                  
                   <div className="flex flex-col items-center text-center space-y-4">
-                    <Avatar
-                      name={student.name}
-                      size="xl"
-                      showStatus
-                      statusColor={student.status === 'active' ? 'success' : 'danger'}
-                    />
+                    {/* Avatar */}
+                    <div className="relative">
+                      <Avatar
+                        name={student.name}
+                        size="2xl"
+                        showStatus
+                        statusColor={student.status === 'active' ? 'success' : 'danger'}
+                      />
+                    </div>
+                    
+                    {/* Student Name */}
                     <div className="w-full">
                       <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                         {student.name}
                       </h3>
-                      <div className="space-y-1 text-sm text-neutral-600">
-                        <p>{student.email}</p>
-                        <p>{student.mobile}</p>
-                        {student.initialCapital && (
-                          <p className="text-xs text-neutral-500">
-                            Capital: ₹{student.initialCapital.toLocaleString('en-IN')}
-                          </p>
-                        )}
-                      </div>
                     </div>
-                    {hasPendingRequest ? (
-                      <div className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-warning-50 text-warning-700 rounded-lg">
-                        <CheckIcon className="h-4 w-4" />
-                        <span className="text-sm font-medium">Request Sent</span>
-                      </div>
-                    ) : (
-                      <Button
-                        variant="primary"
-                        fullWidth
-                        onClick={() => handleSendRequest(student)}
-                        icon={<UserPlusIcon className="h-4 w-4" />}
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-center gap-3 w-full">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/students/${student.id}`)}
+                        className="h-10 w-10 rounded-full bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
+                        aria-label="View profile"
                       >
-                        Send Request
-                      </Button>
-                    )}
+                        <EyeIcon className="h-5 w-5" />
+                      </button>
+                      {!hasPendingRequest && (
+                        <button
+                          type="button"
+                          onClick={() => handleSendRequest(student)}
+                          className="h-10 w-10 rounded-full bg-success-600 text-white hover:bg-success-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2 flex items-center justify-center"
+                          aria-label="Send request"
+                        >
+                          <UserPlusIcon className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </Card>
               );
