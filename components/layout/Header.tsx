@@ -2,8 +2,13 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { UserCircleIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, ChevronDownIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { storage } from '@/lib/storage';
+import { PanicButton } from '@/components/common/PanicButton';
+import { ConfirmDialog } from '@/components/common/Modal';
+import { Toast } from '@/components/common/Toast';
+import { getPanicHandler } from '@/services/tradeService';
+import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -12,15 +17,32 @@ interface HeaderProps {
 
 export function Header({ title = 'Dashboard' }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [panicConfirmOpen, setPanicConfirmOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const { toast, showToast, hideToast } = useToast();
   
   const auth = storage.getAuth();
   const userName = auth?.user?.name || 'Teacher';
 
   const isProfilePage = pathname === '/profile';
   const isSettingsPage = pathname === '/settings';
+
+  const handlePanic = () => {
+    setPanicConfirmOpen(true);
+  };
+
+  const confirmPanic = () => {
+    const panicHandler = getPanicHandler();
+    const closedCount = panicHandler();
+    setPanicConfirmOpen(false);
+    showToast(`Closed ${closedCount} trades successfully!`, 'success');
+    // Reload the page to refresh trade data across all pages
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -52,10 +74,16 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-64 z-40 h-16 border-b border-neutral-200 bg-white">
-      <div className="flex h-full items-center justify-end px-6">
-        {/* User Dropdown */}
-        <div ref={dropdownRef} className="relative">
+    <>
+      <header className="fixed top-0 right-0 left-64 z-40 h-16 border-b border-neutral-200 bg-white">
+        <div className="flex h-full items-center justify-between px-6">
+          {/* Panic Button */}
+          <div className="flex items-center">
+            <PanicButton onClick={handlePanic} label="Panic Button" />
+          </div>
+
+          {/* User Dropdown */}
+          <div ref={dropdownRef} className="relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-neutral-100 focus:outline-none"
@@ -125,8 +153,29 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
             </div>
           )}
         </div>
-      </div>
-    </header>
+        </div>
+      </header>
+
+      {/* Panic Confirmation Dialog */}
+      <ConfirmDialog
+        open={panicConfirmOpen}
+        onClose={() => setPanicConfirmOpen(false)}
+        onConfirm={confirmPanic}
+        title="Close All Trades - Panic Button"
+        message="Are you sure you want to close ALL open trades for you and all your students? This action cannot be undone and will execute immediately."
+        danger
+        icon={<ExclamationTriangleIcon className="h-6 w-6" />}
+        iconWrapperClassName="bg-danger-100 text-danger-600"
+      />
+
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
+    </>
   );
 }
 

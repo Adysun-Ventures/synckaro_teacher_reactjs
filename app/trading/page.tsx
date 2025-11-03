@@ -2,12 +2,11 @@
 
 import { useState, useEffect, FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
-import { ConfirmDialog } from '@/components/common/Modal';
 import { TradeListHeader } from '@/components/teachers/TradeListHeader';
 import { CompactTradeRow } from '@/components/teachers/CompactTradeRow';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
@@ -43,7 +42,6 @@ export default function TradingPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [panicConfirmOpen, setPanicConfirmOpen] = useState(false);
   const [recentTrades, setRecentTrades] = useState<Trade[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
@@ -180,47 +178,6 @@ export default function TradingPage() {
     }
   };
 
-  const handlePanic = () => {
-    setPanicConfirmOpen(true);
-  };
-
-  const confirmPanic = () => {
-    // Close all open trades for teacher and students
-    const allTrades = (storage.getItem('trades') || []) as Trade[];
-    const allStudents = (storage.getItem('students') || []) as { id: string; teacherId: string }[];
-
-    const teacherStudentIds = allStudents
-      .filter((s) => s.teacherId === teacherId)
-      .map((s) => s.id);
-
-    const tradesToClose = allTrades.filter(
-      (t) =>
-        (t.teacherId === teacherId || (t.studentId && teacherStudentIds.includes(t.studentId))) &&
-        (t.status === 'pending' || t.status === 'executed')
-    );
-
-    const updatedTrades = allTrades.map((t) => {
-      if (
-        (t.teacherId === teacherId || (t.studentId && teacherStudentIds.includes(t.studentId))) &&
-        (t.status === 'pending' || t.status === 'executed')
-      ) {
-        return { ...t, status: 'completed' as const };
-      }
-      return t;
-    });
-
-    storage.setItem('trades', updatedTrades);
-
-    // Update recent trades
-    const teacherTrades = updatedTrades
-      .filter((t) => t.teacherId === teacherId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    setRecentTrades(teacherTrades);
-
-    setPanicConfirmOpen(false);
-    alert(`Closed ${tradesToClose.length} trades successfully!`);
-  };
-
   // Paginate recent trades
   const paginatedTrades = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -242,19 +199,6 @@ export default function TradingPage() {
   return (
     <DashboardLayout title="Trading">
       <div className="space-y-6">
-        {/* Panic Button - Always Visible */}
-        <div className="flex items-center justify-end">
-          <Button
-            variant="danger"
-            size="lg"
-            onClick={handlePanic}
-            icon={<ExclamationTriangleIcon className="h-5 w-5" />}
-            className="shadow-lg"
-          >
-            🚨 Panic Button - Close All Trades
-          </Button>
-        </div>
-
         {/* Trade Execution Form */}
         <Card padding="lg">
           <h2 className="text-xl font-semibold text-neutral-900 mb-6">
@@ -465,17 +409,6 @@ export default function TradingPage() {
           )}
         </Card>
 
-        {/* Panic Button Confirmation */}
-        <ConfirmDialog
-          open={panicConfirmOpen}
-          onClose={() => setPanicConfirmOpen(false)}
-          onConfirm={confirmPanic}
-          title="🚨 Close All Trades - Panic Button"
-          message="Are you sure you want to close ALL open trades for you and all your students? This action cannot be undone and will execute immediately."
-          danger
-          icon={<ExclamationTriangleIcon className="h-6 w-6" />}
-          iconWrapperClassName="bg-danger-100 text-danger-600"
-        />
       </div>
     </DashboardLayout>
   );
