@@ -9,6 +9,8 @@ import {
   UserGroupIcon,
   CheckCircleIcon,
   ArrowRightIcon,
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
 } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
@@ -116,147 +118,162 @@ export default function ConnectionsPage() {
       <div className="space-y-6">
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-4">
-          <Card padding="lg" className="hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="bg-primary-100 p-3 rounded-lg">
-                <UserPlusIcon className="h-6 w-6 text-primary-600" />
-              </div>
+          <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm text-neutral-500 mb-1">Incoming Requests</p>
-                <p className="text-2xl font-semibold text-neutral-900">{stats.incomingPending}</p>
-                <p className="text-xs text-neutral-400 mt-1">Pending approval</p>
+                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1.5">Incoming Requests</p>
+                <p className="text-2xl font-bold text-neutral-900 mb-1">{stats.incomingPending}</p>
+                <p className="text-xs text-neutral-400">Pending approval</p>
+              </div>
+              <div className="flex-shrink-0 ml-3">
+                <div className="bg-primary-50 p-2.5 rounded-lg">
+                  <ArrowDownLeftIcon className="h-5 w-5 text-primary-600" />
+                </div>
               </div>
             </div>
           </Card>
 
-          <Card padding="lg" className="hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="bg-warning-100 p-3 rounded-lg">
-                <UserPlusIcon className="h-6 w-6 text-warning-600" />
-              </div>
+          <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm text-neutral-500 mb-1">Outgoing Requests</p>
-                <p className="text-2xl font-semibold text-neutral-900">{stats.outgoingPending}</p>
-                <p className="text-xs text-neutral-400 mt-1">Awaiting response</p>
+                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1.5">Outgoing Requests</p>
+                <p className="text-2xl font-bold text-neutral-900 mb-1">{stats.outgoingPending}</p>
+                <p className="text-xs text-neutral-400">Awaiting response</p>
+              </div>
+              <div className="flex-shrink-0 ml-3">
+                <div className="bg-warning-50 p-2.5 rounded-lg">
+                  <ArrowUpRightIcon className="h-5 w-5 text-warning-600" />
+                </div>
               </div>
             </div>
           </Card>
 
-          <Card padding="lg" className="hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="bg-success-100 p-3 rounded-lg">
-                <UserGroupIcon className="h-6 w-6 text-success-600" />
-              </div>
+          <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm text-neutral-500 mb-1">Zombie Students</p>
-                <p className="text-2xl font-semibold text-neutral-900">{stats.zombieStudents}</p>
-                <p className="text-xs text-neutral-400 mt-1">Available to connect</p>
+                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1.5">Zombie Students</p>
+                <p className="text-2xl font-bold text-neutral-900 mb-1">{stats.zombieStudents}</p>
+                <p className="text-xs text-neutral-400">Available to connect</p>
+              </div>
+              <div className="flex-shrink-0 ml-3">
+                <div className="bg-success-50 p-2.5 rounded-lg">
+                  <UserGroupIcon className="h-5 w-5 text-success-600" />
+                </div>
               </div>
             </div>
           </Card>
 
-          <Card padding="lg" className="hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-4">
-              <div className="bg-success-100 p-3 rounded-lg">
-                <CheckCircleIcon className="h-6 w-6 text-success-600" />
-              </div>
+          <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md transition-all duration-200">
+            <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm text-neutral-500 mb-1">Connected Students</p>
-                <p className="text-2xl font-semibold text-neutral-900">{stats.connectedStudents}</p>
-                <p className="text-xs text-neutral-400 mt-1">Active connections</p>
+                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-1.5">Connected Students</p>
+                <p className="text-2xl font-bold text-neutral-900 mb-1">{stats.connectedStudents}</p>
+                <p className="text-xs text-neutral-400">Active connections</p>
+              </div>
+              <div className="flex-shrink-0 ml-3">
+                <div className="bg-success-50 p-2.5 rounded-lg">
+                  <CheckCircleIcon className="h-5 w-5 text-success-600" />
+                </div>
               </div>
             </div>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <Card padding="lg">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-4">Quick Actions</h2>
-          <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold text-neutral-900">Quick Actions</h2>
+          <div className="grid gap-3 md:grid-cols-3">
             <Link href="/connections/incoming">
-              <Card padding="md" className="hover:shadow-md transition-shadow cursor-pointer border-2 border-neutral-200 hover:border-primary-300">
-                <div className="flex items-center gap-4">
-                  <div className="bg-primary-100 p-3 rounded-lg">
-                    <UserPlusIcon className="h-6 w-6 text-primary-600" />
+              <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md hover:border-primary-300 transition-all duration-200 cursor-pointer group">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="bg-primary-50 p-2 rounded-lg flex-shrink-0">
+                      <ArrowDownLeftIcon className="h-5 w-5 text-primary-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-neutral-900 mb-0.5 leading-tight">Incoming Requests</h3>
+                      <p className="text-xs text-neutral-500 leading-tight truncate">Review and manage</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 mb-1">Incoming Requests</h3>
-                    <p className="text-sm text-neutral-500">Review and manage incoming requests</p>
-                  </div>
-                  <ArrowRightIcon className="h-5 w-5 text-neutral-400" />
+                  <ArrowRightIcon className="h-4 w-4 text-neutral-400 group-hover:text-primary-600 transition-colors flex-shrink-0 ml-2" />
                 </div>
               </Card>
             </Link>
 
             <Link href="/connections/outgoing">
-              <Card padding="md" className="hover:shadow-md transition-shadow cursor-pointer border-2 border-neutral-200 hover:border-primary-300">
-                <div className="flex items-center gap-4">
-                  <div className="bg-warning-100 p-3 rounded-lg">
-                    <UserPlusIcon className="h-6 w-6 text-warning-600" />
+              <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md hover:border-warning-300 transition-all duration-200 cursor-pointer group">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="bg-warning-50 p-2 rounded-lg flex-shrink-0">
+                      <ArrowUpRightIcon className="h-5 w-5 text-warning-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-neutral-900 mb-0.5 leading-tight">Outgoing Requests</h3>
+                      <p className="text-xs text-neutral-500 leading-tight truncate">Track your sent requests</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 mb-1">Outgoing Requests</h3>
-                    <p className="text-sm text-neutral-500">Track your sent requests</p>
-                  </div>
-                  <ArrowRightIcon className="h-5 w-5 text-neutral-400" />
+                  <ArrowRightIcon className="h-4 w-4 text-neutral-400 group-hover:text-warning-600 transition-colors flex-shrink-0 ml-2" />
                 </div>
               </Card>
             </Link>
 
             <Link href="/connections/search">
-              <Card padding="md" className="hover:shadow-md transition-shadow cursor-pointer border-2 border-neutral-200 hover:border-primary-300">
-                <div className="flex items-center gap-4">
-                  <div className="bg-success-100 p-3 rounded-lg">
-                    <MagnifyingGlassIcon className="h-6 w-6 text-success-600" />
+              <Card padding="sm" className="border border-neutral-200 bg-white hover:shadow-md hover:border-success-300 transition-all duration-200 cursor-pointer group">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="bg-success-50 p-2 rounded-lg flex-shrink-0">
+                      <MagnifyingGlassIcon className="h-5 w-5 text-success-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold text-neutral-900 mb-0.5 leading-tight">Search Students</h3>
+                      <p className="text-xs text-neutral-500 leading-tight truncate">Find zombie students</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-neutral-900 mb-1">Search Students</h3>
-                    <p className="text-sm text-neutral-500">Find zombie students to connect</p>
-                  </div>
-                  <ArrowRightIcon className="h-5 w-5 text-neutral-400" />
+                  <ArrowRightIcon className="h-4 w-4 text-neutral-400 group-hover:text-success-600 transition-colors flex-shrink-0 ml-2" />
                 </div>
               </Card>
             </Link>
           </div>
-        </Card>
+        </div>
 
         {/* Recent Activity */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Recent Incoming Requests */}
-          <Card padding="lg">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-neutral-900">Recent Incoming Requests</h2>
-              <Link href="/connections/incoming">
-                <Button variant="ghost" size="sm">
-                  View All
-                  <ArrowRightIcon className="h-4 w-4 ml-1" />
-                </Button>
+          <Card padding="sm" className="border border-neutral-200 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-neutral-900">Recent Incoming</h2>
+              <Link 
+                href="/connections/incoming"
+                className="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1 transition-colors"
+              >
+                View All
+                <ArrowRightIcon className="h-3.5 w-3.5" />
               </Link>
             </div>
             {recentIncoming.length === 0 ? (
-              <div className="text-center py-8 text-neutral-500">
+              <div className="text-center py-6 text-xs text-neutral-500">
                 <p>No incoming requests</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
                 {recentIncoming.map((req) => {
                   if (!req.student) return null;
                   return (
                     <div
                       key={req.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors"
+                      className="flex items-center gap-2.5 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 hover:border-primary-200 transition-all duration-200"
                     >
                       <Avatar
                         name={req.student.name}
-                        size="md"
+                        size="sm"
                         showStatus
                         statusColor="warning"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-neutral-900 truncate">{req.student.name}</p>
-                        <p className="text-xs text-neutral-500">{formatDate(req.createdAt)}</p>
+                        <p className="text-sm font-medium text-neutral-900 truncate leading-tight">{req.student.name}</p>
+                        <p className="text-xs text-neutral-500 leading-tight">{formatDate(req.createdAt)}</p>
                       </div>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning-100 text-warning-700">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-warning-100 text-warning-700 border border-warning-200 flex-shrink-0">
                         Pending
                       </span>
                     </div>
@@ -267,40 +284,41 @@ export default function ConnectionsPage() {
           </Card>
 
           {/* Recent Outgoing Requests */}
-          <Card padding="lg">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-neutral-900">Recent Outgoing Requests</h2>
-              <Link href="/connections/outgoing">
-                <Button variant="ghost" size="sm">
-                  View All
-                  <ArrowRightIcon className="h-4 w-4 ml-1" />
-                </Button>
+          <Card padding="sm" className="border border-neutral-200 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-neutral-900">Recent Outgoing</h2>
+              <Link 
+                href="/connections/outgoing"
+                className="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1 transition-colors"
+              >
+                View All
+                <ArrowRightIcon className="h-3.5 w-3.5" />
               </Link>
             </div>
             {recentOutgoing.length === 0 ? (
-              <div className="text-center py-8 text-neutral-500">
+              <div className="text-center py-6 text-xs text-neutral-500">
                 <p>No outgoing requests</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
                 {recentOutgoing.map((req) => {
                   if (!req.student) return null;
                   return (
                     <div
                       key={req.id}
-                      className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 transition-colors"
+                      className="flex items-center gap-2.5 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 hover:border-warning-200 transition-all duration-200"
                     >
                       <Avatar
                         name={req.student.name}
-                        size="md"
+                        size="sm"
                         showStatus
                         statusColor="warning"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-neutral-900 truncate">{req.student.name}</p>
-                        <p className="text-xs text-neutral-500">{formatDate(req.createdAt)}</p>
+                        <p className="text-sm font-medium text-neutral-900 truncate leading-tight">{req.student.name}</p>
+                        <p className="text-xs text-neutral-500 leading-tight">{formatDate(req.createdAt)}</p>
                       </div>
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-warning-100 text-warning-700">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-warning-100 text-warning-700 border border-warning-200 flex-shrink-0">
                         Pending
                       </span>
                     </div>
