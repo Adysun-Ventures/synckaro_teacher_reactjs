@@ -8,6 +8,8 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
+import { Toast } from '@/components/common/Toast';
+import { useToast } from '@/hooks/useToast';
 import { isAuthenticated, getCurrentUser } from '@/services/authService';
 import { storage } from '@/lib/storage';
 import { BrokerConfig } from '@/types';
@@ -27,6 +29,7 @@ export default function BrokerPage() {
   const router = useRouter();
   const user = getCurrentUser();
   const teacherId = user?.id || '';
+  const { toast, showToast, hideToast } = useToast();
 
   const [formData, setFormData] = useState({
     brokerProvider: '',
@@ -153,7 +156,7 @@ export default function BrokerPage() {
       setBrokerConfig(config);
 
       // Show success message
-      alert('Broker configuration saved successfully!');
+      showToast('Broker configuration saved successfully!', 'success');
     } catch (error) {
       console.error('Error saving broker config:', error);
       setErrors({ submit: 'Failed to save broker configuration. Please try again.' });
@@ -338,6 +341,14 @@ export default function BrokerPage() {
           </form>
         </Card>
       </div>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={hideToast}
+      />
     </DashboardLayout>
   );
 }
