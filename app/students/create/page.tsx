@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -131,27 +132,19 @@ export default function CreateStudentPage() {
   return (
     <DashboardLayout title="Create Student">
       <div className="space-y-6">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          icon={<ArrowLeftIcon className="h-4 w-4" />}
-        >
-          Back
-        </Button>
-
         <Card padding="lg">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-6">
-            Create New Student
-          </h2>
+          <div className="space-y-4">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader title="Create New Student" />
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
             {/* Personal Information */}
             <div>
               <h3 className="text-lg font-medium text-neutral-900 mb-4">
                 Personal Information
               </h3>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Input
                   label="Name *"
                   type="text"
@@ -195,7 +188,7 @@ export default function CreateStudentPage() {
               <h3 className="text-lg font-medium text-neutral-900 mb-4">
                 Broker Configuration
               </h3>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Input
                   label="Broker Name"
                   type="text"

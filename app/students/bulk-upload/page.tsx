@@ -2,8 +2,9 @@
 
 import { useState, useEffect, ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon, ArrowUpTrayIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowUpTrayIcon, CheckIcon, XMarkIcon, DocumentIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import {
@@ -38,6 +39,7 @@ export default function BulkUploadPage() {
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [errors, setErrors] = useState<Array<{ row: number; error: string }>>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [uploadResult, setUploadResult] = useState<{
     created: number;
     errors: Array<{ row: number; error: string }>;
@@ -156,10 +158,7 @@ export default function BulkUploadPage() {
     return rows;
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
-
+  const processFile = (selectedFile: File) => {
     if (!selectedFile.name.endsWith('.csv')) {
       alert('Please select a CSV file');
       return;
@@ -182,6 +181,64 @@ export default function BulkUploadPage() {
       }
     };
     reader.readAsText(selectedFile);
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+    processFile(selectedFile);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      processFile(droppedFile);
+    }
+  };
+
+  const downloadSampleCSV = () => {
+    // Sample CSV content with headers and example data
+    const csvContent = `name,email,mobile,phone,initialCapital,riskPercentage,strategy,status
+John Doe,john.doe@example.com,9876543210,9876543210,50000,10,Conservative,active
+Jane Smith,jane.smith@example.com,9876543211,9876543211,75000,15,Moderate,active
+Bob Johnson,bob.johnson@example.com,9876543212,,60000,12,Aggressive,active
+Alice Williams,alice.williams@example.com,9876543213,9876543213,80000,8,Conservative,inactive`;
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'sample_students_template.csv');
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
   };
 
   const handleUpload = async () => {
@@ -207,7 +264,10 @@ export default function BulkUploadPage() {
       }));
 
       const result = bulkCreateStudents(studentData, teacherId);
-      setUploadResult(result);
+      setUploadResult({
+        created: result.created.length,
+        errors: result.errors,
+      });
 
       if (result.created.length > 0) {
         // Show success message and redirect after a delay
@@ -226,37 +286,101 @@ export default function BulkUploadPage() {
   return (
     <DashboardLayout title="Bulk Upload Students">
       <div className="space-y-6">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          icon={<ArrowLeftIcon className="h-4 w-4" />}
-        >
-          Back
-        </Button>
-
         <Card padding="lg">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-6">
-            Bulk Upload Students
-          </h2>
+          <div className="space-y-4">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader title="Bulk Upload Students" />
+          </div>
 
           {/* File Upload */}
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-6 mt-6">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Upload CSV File
-              </label>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-neutral-700">
+                  Upload CSV File
+                </label>
+                <button
+                  type="button"
+                  onClick={downloadSampleCSV}
+                  className="inline-flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 hover:border-primary-400"
+                >
+                  <ArrowDownTrayIcon className="h-4 w-4" />
+                  Download Sample CSV
+                </button>
+              </div>
+              
+              {/* Drag and Drop Zone */}
+              <div
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={cn(
+                  'relative border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer',
+                  isDragging
+                    ? 'border-primary-500 bg-primary-50'
+                    : 'border-neutral-300 bg-neutral-50 hover:border-primary-400 hover:bg-primary-50/50'
+                )}
+                onClick={() => document.getElementById('file-input')?.click()}
+              >
                 <input
+                  id="file-input"
                   type="file"
                   accept=".csv"
                   onChange={handleFileChange}
-                  className="block w-full text-sm text-neutral-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                  className="hidden"
                 />
-                {file && (
-                  <span className="text-sm text-neutral-600">{file.name}</span>
+                
+                {file ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="p-3 rounded-full bg-primary-100">
+                      <DocumentIcon className="h-8 w-8 text-primary-600" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-neutral-900">{file.name}</p>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFile(null);
+                        setCsvData([]);
+                        setErrors([]);
+                        setUploadResult(null);
+                        const input = document.getElementById('file-input') as HTMLInputElement;
+                        if (input) input.value = '';
+                      }}
+                      className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className={cn(
+                      'p-3 rounded-full transition-colors',
+                      isDragging ? 'bg-primary-100' : 'bg-neutral-100'
+                    )}>
+                      <ArrowUpTrayIcon className={cn(
+                        'h-8 w-8 transition-colors',
+                        isDragging ? 'text-primary-600' : 'text-neutral-600'
+                      )} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-neutral-900 mb-1">
+                        {isDragging ? 'Drop CSV file here' : 'Drag and drop CSV file here'}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        or <span className="text-primary-600 hover:text-primary-700 font-medium">click to browse</span>
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
+              
               <p className="mt-2 text-xs text-neutral-500">
                 CSV file should have columns: name, email, mobile (required), phone, initialCapital, riskPercentage, strategy, status (optional)
               </p>
@@ -339,13 +463,13 @@ export default function BulkUploadPage() {
             <div
               className={cn(
                 'mb-6 rounded-lg border p-4',
-                uploadResult.created.length > 0
+                uploadResult.created > 0
                   ? 'border-success-200 bg-success-50'
                   : 'border-danger-200 bg-danger-50'
               )}
             >
               <div className="flex items-center gap-2 mb-2">
-                {uploadResult.created.length > 0 ? (
+                {uploadResult.created > 0 ? (
                   <CheckIcon className="h-5 w-5 text-success-600" />
                 ) : (
                   <XMarkIcon className="h-5 w-5 text-danger-600" />
@@ -353,18 +477,18 @@ export default function BulkUploadPage() {
                 <h4
                   className={cn(
                     'text-sm font-medium',
-                    uploadResult.created.length > 0
+                    uploadResult.created > 0
                       ? 'text-success-900'
                       : 'text-danger-900'
                   )}
                 >
-                  Upload {uploadResult.created.length > 0 ? 'Success' : 'Failed'}
+                  Upload {uploadResult.created > 0 ? 'Success' : 'Failed'}
                 </h4>
               </div>
               <div className="text-sm text-neutral-700">
                 <p>
-                  Created: {uploadResult.created.length} student
-                  {uploadResult.created.length !== 1 ? 's' : ''}
+                  Created: {uploadResult.created} student
+                  {uploadResult.created !== 1 ? 's' : ''}
                 </p>
                 {uploadResult.errors.length > 0 && (
                   <p className="mt-1 text-danger-700">
