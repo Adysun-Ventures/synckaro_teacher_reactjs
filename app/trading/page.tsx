@@ -2,9 +2,10 @@
 
 import { useState, useEffect, FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
+import { PageHeader } from '@/components/common/PageHeader';
+import { SegmentedToggle } from '@/components/common/SegmentedToggle';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
 import { TradeListHeader } from '@/components/teachers/TradeListHeader';
@@ -201,136 +202,104 @@ export default function TradingPage() {
       <div className="space-y-6">
         {/* Trade Execution Form */}
         <Card padding="lg">
-          <h2 className="text-xl font-semibold text-neutral-900 mb-6">
-            Execute Trade
-          </h2>
+          <PageHeader title="Execute Trade" />
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Stock Search with Autocomplete */}
-            <div className="relative">
-              <Input
-                label="Stock Symbol *"
-                type="text"
-                value={formData.stock}
-                onChange={(e) => handleChange('stock', e.target.value.toUpperCase())}
-                onFocus={() => setShowSuggestions(true)}
-                error={errors.stock}
-                placeholder="Search stock (e.g., RELIANCE, TCS)"
-                required
-              />
-              {showSuggestions && stockSuggestions.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full rounded-lg border border-neutral-200 bg-white shadow-lg max-h-48 overflow-y-auto">
-                  {stockSuggestions.map((stock) => (
-                    <button
-                      key={stock}
-                      type="button"
-                      onClick={() => handleStockSelect(stock)}
-                      className="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                    >
-                      {stock}
-                    </button>
-                  ))}
+            <div className="grid gap-4 md:grid-cols-4">
+              {/* Stock Search with Autocomplete */}
+              <div className="relative md:col-span-4">
+                <div className="mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700">
+                    Stock Symbol <span className="text-danger-500">*</span>
+                  </label>
                 </div>
-              )}
-            </div>
-
-            {/* Quantity and Price */}
-            <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                label="Quantity *"
-                type="number"
-                value={formData.quantity}
-                onChange={(e) => handleChange('quantity', e.target.value)}
-                error={errors.quantity}
-                placeholder="Number of shares"
-                min="1"
-                required
-              />
-              <Input
-                label="Price (Optional)"
-                type="number"
-                value={formData.price}
-                onChange={(e) => handleChange('price', e.target.value)}
-                error={errors.price}
-                placeholder="Limit price (optional)"
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            {/* Exchange Selection */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Exchange *
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="exchange"
-                    value="NSE"
-                    checked={formData.exchange === 'NSE'}
-                    onChange={(e) => handleChange('exchange', e.target.value as 'NSE' | 'BSE')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm text-neutral-700">NSE</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="exchange"
-                    value="BSE"
-                    checked={formData.exchange === 'BSE'}
-                    onChange={(e) => handleChange('exchange', e.target.value as 'NSE' | 'BSE')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm text-neutral-700">BSE</span>
-                </label>
+                <Input
+                  type="text"
+                  value={formData.stock}
+                  onChange={(e) => handleChange('stock', e.target.value.toUpperCase())}
+                  onFocus={() => setShowSuggestions(true)}
+                  error={errors.stock}
+                  placeholder="Search stock (e.g., RELIANCE, TCS)"
+                  required
+                />
+                {showSuggestions && stockSuggestions.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-neutral-200 bg-white shadow-lg max-h-48 overflow-y-auto">
+                    {stockSuggestions.map((stock) => (
+                      <button
+                        key={stock}
+                        type="button"
+                        onClick={() => handleStockSelect(stock)}
+                        className="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+                      >
+                        {stock}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Order Type */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">
-                Order Type *
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="orderType"
-                    value="BUY"
-                    checked={formData.orderType === 'BUY'}
-                    onChange={(e) => handleChange('orderType', e.target.value as 'BUY' | 'SELL')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className={cn(
-                    'px-3 py-1.5 rounded-lg text-sm font-medium',
-                    formData.orderType === 'BUY'
-                      ? 'bg-success-100 text-success-700'
-                      : 'bg-neutral-100 text-neutral-700'
-                  )}>
-                    BUY
-                  </span>
+              {/* Quantity */}
+              <div>
+                <div className="mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700">
+                    Quantity <span className="text-danger-500">*</span>
+                  </label>
+                </div>
+                <Input
+                  type="number"
+                  value={formData.quantity}
+                  onChange={(e) => handleChange('quantity', e.target.value)}
+                  error={errors.quantity}
+                  placeholder="Number of shares"
+                  min="1"
+                  required
+                />
+              </div>
+
+              {/* Price */}
+              <div>
+                <Input
+                  label="Price (Optional)"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleChange('price', e.target.value)}
+                  error={errors.price}
+                  placeholder="Limit price (optional)"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              {/* Exchange Selection */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Exchange <span className="text-danger-500">*</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="orderType"
-                    value="SELL"
-                    checked={formData.orderType === 'SELL'}
-                    onChange={(e) => handleChange('orderType', e.target.value as 'BUY' | 'SELL')}
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className={cn(
-                    'px-3 py-1.5 rounded-lg text-sm font-medium',
-                    formData.orderType === 'SELL'
-                      ? 'bg-danger-100 text-danger-700'
-                      : 'bg-neutral-100 text-neutral-700'
-                  )}>
-                    SELL
-                  </span>
+                <SegmentedToggle
+                  options={[
+                    { value: 'NSE', label: 'NSE' },
+                    { value: 'BSE', label: 'BSE' },
+                  ]}
+                  value={formData.exchange}
+                  onChange={(value) => handleChange('exchange', value as 'NSE' | 'BSE')}
+                  variant="primary"
+                />
+              </div>
+
+              {/* Order Type */}
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                  Order Type <span className="text-danger-500">*</span>
                 </label>
+                <SegmentedToggle
+                  options={[
+                    { value: 'BUY', label: 'BUY' },
+                    { value: 'SELL', label: 'SELL' },
+                  ]}
+                  value={formData.orderType}
+                  onChange={(value) => handleChange('orderType', value as 'BUY' | 'SELL')}
+                  variant={(value) => (value === 'BUY' ? 'success' : 'danger')}
+                />
               </div>
             </div>
 
