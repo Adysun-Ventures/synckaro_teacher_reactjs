@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
+import { PageHeader } from '@/components/common/PageHeader';
 import { SearchBar } from '@/components/common/SearchBar';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { TradeListHeader } from '@/components/teachers/TradeListHeader';
@@ -110,72 +109,63 @@ export default function TradeHistoryPage() {
 
   return (
     <DashboardLayout title="Trade History">
-      <div className="space-y-6">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          icon={<ArrowLeftIcon className="h-4 w-4" />}
-        >
-          Back
-        </Button>
+      {/* Single Card Container - No Gaps */}
+      <Card padding="lg">
+        {/* Page Header with Back Button and Centered Title */}
+        <PageHeader title="Trade History" />
 
         {/* Filters */}
-        <Card padding="lg">
-          <div className="flex flex-wrap items-center gap-4 mb-4">
-            <div className="flex-1 min-w-64">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search by stock, type, or student..."
-                className="w-full"
-              />
-            </div>
-            <div className="flex gap-3">
-              {/* Exchange Filter */}
-              <select
-                value={exchangeFilter}
-                onChange={(e) => setExchangeFilter(e.target.value as 'all' | 'NSE' | 'BSE')}
-                className="px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-              >
-                <option value="all">All Exchanges</option>
-                <option value="NSE">NSE</option>
-                <option value="BSE">BSE</option>
-              </select>
+        <div className="flex flex-wrap items-center gap-4 mb-4">
+          <div className="flex gap-3">
+            {/* Exchange Filter */}
+            <select
+              value={exchangeFilter}
+              onChange={(e) => setExchangeFilter(e.target.value as 'all' | 'NSE' | 'BSE')}
+              className="px-3 py-2 text-sm text-neutral-700 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
+            >
+              <option value="all" className="text-neutral-700">All Exchanges</option>
+              <option value="NSE" className="text-neutral-700">NSE</option>
+              <option value="BSE" className="text-neutral-700">BSE</option>
+            </select>
 
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as 'all' | Trade['status'])}
-                className="px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-              >
-                <option value="all">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="executed">Executed</option>
-                <option value="completed">Completed</option>
-                <option value="failed">Failed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
+            {/* Status Filter */}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | Trade['status'])}
+              className="px-3 py-2 text-sm text-neutral-700 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
+            >
+              <option value="all" className="text-neutral-700">All Status</option>
+              <option value="pending" className="text-neutral-700">Pending</option>
+              <option value="executed" className="text-neutral-700">Executed</option>
+              <option value="completed" className="text-neutral-700">Completed</option>
+              <option value="failed" className="text-neutral-700">Failed</option>
+              <option value="cancelled" className="text-neutral-700">Cancelled</option>
+            </select>
           </div>
+          <div className="flex-1 min-w-64 ml-auto">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search by stock, type, or student..."
+              className="w-full"
+            />
+          </div>
+        </div>
 
-          <div className="text-sm text-neutral-500">
-            Showing {filteredTrades.length} of {trades.length} trades
-          </div>
-        </Card>
+        <div className="text-sm text-neutral-500 mb-4">
+          Showing {filteredTrades.length} of {trades.length} trades
+        </div>
 
         {/* Trades Table */}
         {filteredTrades.length === 0 ? (
-          <Card padding="lg">
-            <EmptyState
-              title="No trades found"
-              description={
-                searchQuery || exchangeFilter !== 'all' || statusFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'No trade history available'
-              }
-            />
-          </Card>
+          <EmptyState
+            title="No trades found"
+            description={
+              searchQuery || exchangeFilter !== 'all' || statusFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'No trade history available'
+            }
+          />
         ) : (
           <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
             <TradeListHeader />
@@ -194,7 +184,7 @@ export default function TradeHistoryPage() {
             />
           </div>
         )}
-      </div>
+      </Card>
     </DashboardLayout>
   );
 }
