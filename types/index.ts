@@ -46,7 +46,7 @@ export interface Student {
   name: string;
   email: string;
   mobile: string;
-  teacherId: string;
+  teacherId: string; // Empty string for zombie students (not associated with any teacher)
   teacherName?: string;
   status: 'active' | 'inactive';
   initialCapital?: number;
@@ -95,5 +95,14 @@ export interface ConnectionRequest {
   status: 'pending' | 'accepted' | 'rejected';
   createdAt: string;
   respondedAt?: string;
+}
+
+// Activity Log Types
+export interface ActivityLog {
+  id: string;
+  teacherId: string;
+  action: string;
+  timestamp: string;
+  details: string;
 }
 

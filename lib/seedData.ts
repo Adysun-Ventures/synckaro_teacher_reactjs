@@ -1,4 +1,4 @@
-import { ActivityLog, Student, Teacher, Trade } from '@/types';
+import { ActivityLog, BrokerConfig, ConnectionRequest, Student, Teacher, Trade } from '@/types';
 
 const TEACHER_NAMES = [
   'Rajesh Kumar',
@@ -125,13 +125,15 @@ const studentMobile = (index: number) => (9200000000 + index * 97).toString();
 function createTeachers(): Teacher[] {
   return TEACHER_NAMES.map((name, index) => {
     const joinedDate = new Date(BASE_TEACHER_JOIN.getTime() + index * 18 * DAY);
+    // First teacher (teacher-1) should have mobile 9999999999
+    const mobile = index === 0 ? '9999999999' : teacherMobile(index);
     return {
       id: `teacher-${index + 1}`,
       name,
       email: `${toSlug(name)}@synckaro.com`,
-      mobile: teacherMobile(index),
-      phone: `+91-${teacherMobile(index).slice(0, 5)}-${teacherMobile(index).slice(5)}`,
-      status: TEACHER_STATUSES[index % TEACHER_STATUSES.length],
+      mobile,
+      phone: `+91-${mobile.slice(0, 5)}-${mobile.slice(5)}`,
+      status: index === 0 ? 'active' : TEACHER_STATUSES[index % TEACHER_STATUSES.length],
       totalStudents: 0,
       totalTrades: 0,
       totalCapital: 0,
@@ -149,7 +151,8 @@ function createStudents(teachers: Teacher[]) {
   let studentCounter = 1;
 
   teachers.forEach((teacher, teacherIndex) => {
-    const allocation = 6 + (teacherIndex % 4);
+    // Teacher-1 gets 8 students, others get 6-9
+    const allocation = teacherIndex === 0 ? 8 : 6 + (teacherIndex % 4);
     const teacherStudents: Student[] = [];
 
     for (let idx = 0; idx < allocation; idx++) {
@@ -198,7 +201,8 @@ function createTrades(teachers: Teacher[], studentsByTeacher: StudentMap) {
 
   teachers.forEach((teacher, teacherIndex) => {
     const teacherStudents = studentsByTeacher[teacher.id];
-    const tradeCount = 16 + (teacherIndex % 4) * 4;
+    // Teacher-1 gets 24 trades, others get 16-20
+    const tradeCount = teacherIndex === 0 ? 24 : 16 + (teacherIndex % 4) * 4;
     const teacherTrades: Trade[] = [];
 
     for (let idx = 0; idx < tradeCount; idx++) {
@@ -294,12 +298,141 @@ function generateActivityLogs(
   return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
+/**
+ * Generate zombie students (students without teacherId)
+ */
+function createZombieStudents(count: number = 8): Student[] {
+  const zombies: Student[] = [];
+  let zombieCounter = 1000; // Start from high number to avoid conflicts
+
+  for (let idx = 0; idx < count; idx++) {
+    const first = STUDENT_FIRST_NAMES[(zombieCounter + idx) % STUDENT_FIRST_NAMES.length];
+    const last = STUDENT_LAST_NAMES[idx % STUDENT_LAST_NAMES.length];
+    const initialCapital = 60000 + (idx * 15000);
+    const currentCapital = Math.max(50000, initialCapital + (idx % 3 - 1) * 8000);
+    const joinDate = new Date(BASE_STUDENT_JOIN.getTime() + (zombieCounter + idx) * 7 * DAY);
+    const status: Student['status'] = idx % 5 === 0 ? 'inactive' : 'active';
+
+    const zombie: Student = {
+      id: `student-zombie-${zombieCounter + idx}`,
+      name: `${first} ${last}`,
+      email: `${first.toLowerCase()}.${last.toLowerCase()}.zombie${zombieCounter + idx}@synckaro.com`,
+      mobile: studentMobile(zombieCounter + idx),
+      teacherId: '', // No teacher - zombie student
+      status,
+      initialCapital,
+      currentCapital,
+      profitLoss: Number((currentCapital - initialCapital).toFixed(2)),
+      riskPercentage: 3 + (idx % 3),
+      strategy: STRATEGIES[idx % STRATEGIES.length],
+      joinedDate: joinDate.toISOString(),
+    };
+
+    zombies.push(zombie);
+  }
+
+  return zombies;
+}
+
+/**
+ * Generate connection requests for teacher-1
+ */
+function createConnectionRequests(
+  teacher1: Teacher,
+  teacher1Students: Student[],
+  zombieStudents: Student[]
+): ConnectionRequest[] {
+  const requests: ConnectionRequest[] = [];
+  let requestCounter = 1;
+
+  // Incoming requests: 2-3 zombie students send requests to teacher-1
+  const incomingCount = Math.min(3, zombieStudents.length);
+  for (let idx = 0; idx < incomingCount; idx++) {
+    const zombie = zombieStudents[idx];
+    requests.push({
+      id: `connection-incoming-${requestCounter++}`,
+      studentId: zombie.id,
+      teacherId: teacher1.id,
+      status: 'pending',
+      createdAt: new Date(BASE_STUDENT_JOIN.getTime() + (1000 + idx) * 7 * DAY + idx * 3600000).toISOString(),
+    });
+  }
+
+  // Outgoing requests: 2-3 requests from teacher-1 to zombie students
+  const outgoingStart = incomingCount;
+  const outgoingCount = Math.min(3, zombieStudents.length - outgoingStart);
+  for (let idx = 0; idx < outgoingCount; idx++) {
+    const zombie = zombieStudents[outgoingStart + idx];
+    requests.push({
+      id: `connection-outgoing-${requestCounter++}`,
+      studentId: zombie.id,
+      teacherId: teacher1.id,
+      status: 'pending',
+      createdAt: new Date(BASE_STUDENT_JOIN.getTime() + (1000 + outgoingStart + idx) * 7 * DAY + idx * 3600000).toISOString(),
+    });
+  }
+
+  return requests;
+}
+
+/**
+ * Generate broker configurations
+ */
+function createBrokerConfigs(
+  teacher1: Teacher,
+  teacher1Students: Student[]
+): BrokerConfig[] {
+  const configs: BrokerConfig[] = [];
+
+  // Broker config for teacher-1
+  configs.push({
+    userId: teacher1.id,
+    brokerProvider: BROKERS[0], // Zerodha
+    apiKey: `teacher-${teacher1.id}-api-key-${Date.now()}`,
+    apiSecret: `teacher-${teacher1.id}-api-secret-${Date.now()}`,
+    accessToken: `teacher-${teacher1.id}-token-${Date.now()}`,
+    isConnected: true,
+    lastChecked: new Date().toISOString(),
+  });
+
+  // Broker configs for 4 of teacher-1's students
+  const studentConfigCount = Math.min(4, teacher1Students.length);
+  for (let idx = 0; idx < studentConfigCount; idx++) {
+    const student = teacher1Students[idx];
+    configs.push({
+      userId: student.id,
+      brokerProvider: BROKERS[(idx + 1) % BROKERS.length],
+      apiKey: `student-${student.id}-api-key-${Date.now()}`,
+      apiSecret: `student-${student.id}-api-secret-${Date.now()}`,
+      accessToken: `student-${student.id}-token-${Date.now()}`,
+      isConnected: idx % 2 === 0, // Alternating connection status
+      lastChecked: new Date(new Date().getTime() - idx * 3600000).toISOString(),
+    });
+  }
+
+  return configs;
+}
+
 export function generateAllSeedData() {
   const teachers = createTeachers();
   const { students, studentsByTeacher } = createStudents(teachers);
   const { trades, tradesByTeacher } = createTrades(teachers, studentsByTeacher);
   const activityLogs = generateActivityLogs(teachers, studentsByTeacher, tradesByTeacher);
 
+  // Generate zombie students
+  const zombieStudents = createZombieStudents(8);
+
+  // Get teacher-1 for connection requests and broker configs
+  const teacher1 = teachers.find((t) => t.id === 'teacher-1');
+  const teacher1Students = studentsByTeacher['teacher-1'] || [];
+
+  // Generate connection requests for teacher-1
+  const connectionRequests = teacher1 ? createConnectionRequests(teacher1, teacher1Students, zombieStudents) : [];
+
+  // Generate broker configs
+  const brokerConfigs = teacher1 ? createBrokerConfigs(teacher1, teacher1Students) : [];
+
+  // Calculate teacher stats
   teachers.forEach((teacher) => {
     const teacherStudents = studentsByTeacher[teacher.id] ?? [];
     const teacherTrades = tradesByTeacher[teacher.id] ?? [];
@@ -318,9 +451,12 @@ export function generateAllSeedData() {
     teacher.winRate = teacherTrades.length ? Math.round((wins / teacherTrades.length) * 100) : 0;
   });
 
+  // Combine all students (regular + zombies)
+  const allStudents = [...students, ...zombieStudents];
+
   const stats = {
     totalTeachers: teachers.length,
-    totalStudents: students.length,
+    totalStudents: allStudents.length,
     totalTrades: trades.length,
     totalCapital: Number(
       teachers.reduce((sum, teacher) => sum + (teacher.totalCapital ?? 0), 0).toFixed(2),
@@ -340,9 +476,11 @@ export function generateAllSeedData() {
 
   return {
     teachers,
-    students,
+    students: allStudents, // Includes zombie students
     trades,
     activityLogs,
+    connectionRequests,
+    brokerConfigs,
     stats,
     generatedAt,
   };

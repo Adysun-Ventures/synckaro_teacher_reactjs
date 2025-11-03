@@ -225,7 +225,7 @@ export default function CreateStudentPage() {
               <h3 className="text-lg font-medium text-neutral-900 mb-4">
                 Trading Configuration
               </h3>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Input
                   label="Initial Capital (₹)"
                   type="number"

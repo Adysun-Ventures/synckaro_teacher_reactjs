@@ -8,6 +8,19 @@ import { AuthData, OTPVerifyData } from '@/types';
 
 // Dummy teacher credentials (for development/testing)
 const DUMMY_TEACHER = {
+  mobile: '9999999999',
+  otp: '1234',
+  user: {
+    id: 'teacher-1',
+    name: 'Teacher',
+    mobile: '9999999999',
+    role: 'teacher' as const,
+    email: 'teacher@synckaro.com',
+  },
+};
+
+// Fallback credentials (legacy support)
+const FALLBACK_TEACHER = {
   mobile: '8888888888',
   otp: '1234',
   user: {
@@ -62,13 +75,39 @@ export async function verifyOTP(data: OTPVerifyData): Promise<{ success: boolean
 
   // Check dummy teacher credentials (for development/testing)
   if (mobile === DUMMY_TEACHER.mobile && otp === DUMMY_TEACHER.otp) {
+    // Try to get teacher from seed data for accurate info
+    const teachers = storage.getItem('teachers') || [];
+    const seedTeacher = teachers.find((t: any) => t.id === 'teacher-1');
+    
     const authData: AuthData = {
-      user: DUMMY_TEACHER.user,
+      user: seedTeacher ? {
+        id: seedTeacher.id,
+        name: seedTeacher.name,
+        mobile: seedTeacher.mobile,
+        role: 'teacher' as const,
+        email: seedTeacher.email,
+      } : DUMMY_TEACHER.user,
       token: `dummy-token-${Date.now()}`,
       isAuthenticated: true,
     };
 
     // Store in localStorage
+    storage.setAuth(authData);
+
+    return {
+      success: true,
+      data: authData,
+    };
+  }
+
+  // Check fallback credentials (legacy support)
+  if (mobile === FALLBACK_TEACHER.mobile && otp === FALLBACK_TEACHER.otp) {
+    const authData: AuthData = {
+      user: FALLBACK_TEACHER.user,
+      token: `dummy-token-${Date.now()}`,
+      isAuthenticated: true,
+    };
+
     storage.setAuth(authData);
 
     return {

@@ -22,6 +22,8 @@ export function loadSeedData() {
   storage.setItem('students', seedData.students);
   storage.setItem('trades', seedData.trades);
   storage.setItem('activityLogs', seedData.activityLogs);
+  storage.setItem('connections', seedData.connectionRequests || []);
+  storage.setItem('brokerConfigs', seedData.brokerConfigs || []);
   storage.setItem('stats', seedData.stats);
   storage.setItem('seedDataGeneratedAt', seedData.generatedAt);
 
@@ -30,6 +32,8 @@ export function loadSeedData() {
     students: seedData.students.length,
     trades: seedData.trades.length,
     activityLogs: seedData.activityLogs.length,
+    connectionRequests: (seedData.connectionRequests || []).length,
+    brokerConfigs: (seedData.brokerConfigs || []).length,
   });
 }
 
@@ -42,6 +46,8 @@ export function clearSeedData() {
   storage.removeItem('students');
   storage.removeItem('trades');
   storage.removeItem('activityLogs');
+  storage.removeItem('connections');
+  storage.removeItem('brokerConfigs');
   storage.removeItem('stats');
   storage.removeItem('seedDataGeneratedAt');
   console.log('Seed data cleared');

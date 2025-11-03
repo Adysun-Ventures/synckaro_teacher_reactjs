@@ -14,6 +14,8 @@ import { getStudent, updateStudent, deleteStudent } from '@/services/studentServ
 import { Student } from '@/types';
 import { cn } from '@/lib/utils';
 
+const TRADING_STRATEGIES = ['Conservative', 'Moderate', 'Aggressive', 'Momentum', 'Swing'];
+
 export default function EditStudentPage() {
   const router = useRouter();
   const params = useParams();
@@ -248,7 +250,7 @@ export default function EditStudentPage() {
               <h3 className="text-lg font-medium text-neutral-900 mb-4">
                 Trading Configuration
               </h3>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Input
                   label="Initial Capital (₹)"
                   type="number"
@@ -277,13 +279,26 @@ export default function EditStudentPage() {
                   max="100"
                   step="0.1"
                 />
-                <div className="md:col-span-2">
-                  <Input
-                    label="Trading Strategy"
-                    type="text"
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    Trading Strategy
+                  </label>
+                  <select
                     value={formData.strategy}
                     onChange={(e) => handleChange('strategy', e.target.value)}
-                  />
+                    className={cn(
+                      'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
+                      'focus:outline-none focus:ring-2 focus:ring-offset-0',
+                      'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
+                    )}
+                  >
+                    <option value="">Select a strategy</option>
+                    {TRADING_STRATEGIES.map((strategy) => (
+                      <option key={strategy} value={strategy}>
+                        {strategy}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
