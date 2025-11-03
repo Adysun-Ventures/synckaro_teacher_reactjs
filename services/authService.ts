@@ -2,20 +2,20 @@ import { storage } from '@/lib/storage';
 import { AuthData, OTPVerifyData } from '@/types';
 
 /**
- * Authentication Service for SyncKaro Admin
+ * Authentication Service for SyncKaro Teacher
  * Handles mobile + OTP authentication with localStorage
  */
 
-// Dummy admin credentials
-const DUMMY_ADMIN = {
-  mobile: '9999999999',
+// Dummy teacher credentials (for development/testing)
+const DUMMY_TEACHER = {
+  mobile: '8888888888',
   otp: '1234',
   user: {
-    id: 'admin-1',
-    name: 'Admin',
-    mobile: '9999999999',
-    role: 'admin' as const,
-    email: 'admin@synckaro.com',
+    id: 'teacher-1',
+    name: 'Teacher',
+    mobile: '8888888888',
+    role: 'teacher' as const,
+    email: 'teacher@synckaro.com',
   },
 };
 
@@ -60,10 +60,10 @@ export async function verifyOTP(data: OTPVerifyData): Promise<{ success: boolean
 
   const { mobile, otp } = data;
 
-  // Check dummy admin credentials
-  if (mobile === DUMMY_ADMIN.mobile && otp === DUMMY_ADMIN.otp) {
+  // Check dummy teacher credentials (for development/testing)
+  if (mobile === DUMMY_TEACHER.mobile && otp === DUMMY_TEACHER.otp) {
     const authData: AuthData = {
-      user: DUMMY_ADMIN.user,
+      user: DUMMY_TEACHER.user,
       token: `dummy-token-${Date.now()}`,
       isAuthenticated: true,
     };
@@ -76,6 +76,9 @@ export async function verifyOTP(data: OTPVerifyData): Promise<{ success: boolean
       data: authData,
     };
   }
+
+  // In production, this would verify with backend for any valid teacher credentials
+  // For now, we accept any valid mobile/OTP combination as teacher (for development)
 
   // In production, this would verify with backend
   // For now, reject any other credentials

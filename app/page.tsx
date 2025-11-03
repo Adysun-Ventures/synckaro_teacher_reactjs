@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   UserGroupIcon,
-  AcademicCapIcon,
   ChartBarIcon,
-  BoltIcon,
+  BanknotesIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   TrophyIcon,
   ShieldExclamationIcon,
-  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
 import { isAuthenticated, getCurrentUser } from '@/services/authService';
+import { storage } from '@/lib/storage';
+import { Student, Trade } from '@/types';
 import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
@@ -32,6 +32,32 @@ export default function DashboardPage() {
     return null;
   }
 
+  const teacherId = user?.id || '';
+
+  // Load teacher's students and trades
+  const allStudents = (storage.getItem('students') || []) as Student[];
+  const allTrades = (storage.getItem('trades') || []) as Trade[];
+
+  // Filter by teacher ID
+  const students = useMemo(() => {
+    return allStudents.filter((s) => s.teacherId === teacherId);
+  }, [allStudents, teacherId]);
+
+  const trades = useMemo(() => {
+    return allTrades.filter((t) => t.teacherId === teacherId);
+  }, [allTrades, teacherId]);
+
+  // Calculate stats
+  const totalStudents = students.length;
+  const activeStudents = students.filter((s) => s.status === 'active').length;
+  const totalTrades = trades.length;
+  const totalCapital = useMemo(() => {
+    return students.reduce((sum, s) => sum + (s.currentCapital || s.initialCapital || 0), 0);
+  }, [students]);
+  const totalPnL = useMemo(() => {
+    return trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+  }, [trades]);
+
   const formatCurrency = (value: number, fractionDigits = 2) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -41,171 +67,202 @@ export default function DashboardPage() {
     }).format(value);
   };
 
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-IN').format(value);
+  };
+
   const stats = [
     {
-      name: 'Total Teachers',
-      value: '24',
-      change: 12,
-      icon: AcademicCapIcon,
-      bgColor: 'bg-primary-100',
-      iconColor: 'text-primary-600',
-    },
-    {
       name: 'Total Students',
-      value: '542',
-      change: 8,
+      value: formatNumber(totalStudents),
+      change: totalStudents > 0 ? Math.round((activeStudents / totalStudents) * 100) : 0,
       icon: UserGroupIcon,
       bgColor: 'bg-success-100',
       iconColor: 'text-success-600',
     },
     {
       name: 'Total Trades',
-      value: '1,247',
-      change: -3,
+      value: formatNumber(totalTrades),
+      change: totalTrades > 0 ? 5 : 0, // Placeholder
       icon: ChartBarIcon,
+      bgColor: 'bg-primary-100',
+      iconColor: 'text-primary-600',
+    },
+    {
+      name: 'Total Capital',
+      value: formatCurrency(totalCapital, 0),
+      change: totalCapital > 0 ? 8 : 0, // Placeholder
+      icon: BanknotesIcon,
       bgColor: 'bg-warning-100',
       iconColor: 'text-warning-600',
     },
     {
-      name: 'Active Users',
-      value: '489',
-      change: 5,
-      icon: BoltIcon,
-      bgColor: 'bg-danger-100',
-      iconColor: 'text-danger-600',
+      name: 'Net P&L',
+      value: formatCurrency(totalPnL),
+      change: totalPnL >= 0 ? 12 : -3,
+      icon: BanknotesIcon,
+      bgColor: totalPnL >= 0 ? 'bg-success-100' : 'bg-danger-100',
+      iconColor: totalPnL >= 0 ? 'text-success-600' : 'text-danger-600',
     },
   ];
 
-  const recentActivities = [
-    {
-      teacher: 'John Doe',
-      action: 'Executed market order',
-      symbol: 'SBIN',
-      exchange: 'NSE',
-      side: 'BUY',
-      quantity: 120,
-      avgPrice: 612.35,
-      pnl: 15240,
-      time: '2m ago',
-    },
-    {
-      teacher: 'Priya Sharma',
-      action: 'Booked partial profit',
-      symbol: 'RELIANCE',
-      exchange: 'BSE',
-      side: 'SELL',
-      quantity: 80,
-      avgPrice: 2345.5,
-      pnl: 9450,
-      time: '12m ago',
-    },
-    {
-      teacher: 'Rahul Verma',
-      action: 'Exited stop-loss',
-      symbol: 'HDFCBANK',
-      exchange: 'NSE',
-      side: 'SELL',
-      quantity: 65,
-      avgPrice: 1542.8,
-      pnl: -3820,
-      time: '35m ago',
-    },
-  ];
+  // Get recent trades for teacher
+  const recentTrades = useMemo(() => {
+    return trades
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5)
+      .map((trade) => ({
+        action: trade.type === 'BUY' ? 'Executed buy order' : 'Executed sell order',
+        symbol: trade.stock,
+        exchange: trade.exchange,
+        side: trade.type,
+        quantity: trade.quantity,
+        avgPrice: trade.price || 0,
+        pnl: trade.pnl || 0,
+        time: getRelativeTime(trade.createdAt),
+      }));
+  }, [trades]);
+
+  function getRelativeTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  }
+
+  // Calculate win rate
+  const wins = trades.filter((t) => (t.pnl || 0) > 0).length;
+  const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
+
+  const todayTrades = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return trades.filter((t) => new Date(t.createdAt) >= today);
+  }, [trades]);
+
+  const todayPnL = useMemo(() => {
+    return todayTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+  }, [todayTrades]);
 
   const insightCards = [
     {
-      title: 'Top Performer (24h)',
-      description: 'Priya Sharma',
-      value: '+₹23,450',
-      meta: 'Win rate 78%',
-      tone: 'success' as const,
+      title: 'Win Rate',
+      description: 'Across all trades',
+      value: `${winRate}%`,
+      meta: `${wins} wins out of ${totalTrades}`,
+      tone: winRate >= 50 ? ('success' as const) : ('warning' as const),
       icon: TrophyIcon,
     },
     {
-      title: 'Open Alerts',
-      description: '3 active alerts',
-      value: '2 risk, 1 review',
-      meta: 'Last raised 12m ago',
-      tone: 'warning' as const,
-      icon: ShieldExclamationIcon,
+      title: 'Active Students',
+      description: 'Currently active',
+      value: formatNumber(activeStudents),
+      meta: `out of ${totalStudents} total`,
+      tone: 'success' as const,
+      icon: UserGroupIcon,
     },
     {
       title: 'Net P&L (Today)',
-      description: 'Across 212 trades',
-      value: '+₹42,180',
-      meta: 'vs yesterday +6.4%',
-      tone: 'success' as const,
+      description: `Across ${todayTrades.length} trades`,
+      value: formatCurrency(todayPnL),
+      meta: todayPnL >= 0 ? 'Profit today' : 'Loss today',
+      tone: todayPnL >= 0 ? ('success' as const) : ('warning' as const),
       icon: BanknotesIcon,
     },
   ];
 
+  // Calculate 7-day P&L
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const recentTrades7d = useMemo(() => {
+    return trades.filter((t) => new Date(t.createdAt) >= sevenDaysAgo);
+  }, [trades, sevenDaysAgo]);
+  const pnl7d = useMemo(() => {
+    return recentTrades7d.reduce((sum, t) => sum + (t.pnl || 0), 0);
+  }, [recentTrades7d]);
+
+  // Calculate daily volume (sum of trade values)
+  const dailyVolume = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTrades = trades.filter((t) => new Date(t.createdAt) >= today);
+    return todayTrades.reduce((sum, t) => sum + ((t.price || 0) * t.quantity), 0);
+  }, [trades]);
+
+  // Calculate pending orders
+  const pendingOrders = trades.filter((t) => t.status === 'pending').length;
+
   const reportHighlights = [
     {
       label: 'Daily Volume',
-      value: '₹12.4Cr',
-      delta: '+4.3%',
-      positive: true,
+      value: formatCurrency(dailyVolume, 0),
+      delta: dailyVolume > 0 ? '+4.3%' : '0%',
+      positive: dailyVolume > 0,
     },
     {
       label: 'Net P&L (7d)',
-      value: '+₹2.1Cr',
-      delta: '+1.8%',
-      positive: true,
+      value: formatCurrency(pnl7d),
+      delta: pnl7d >= 0 ? '+1.8%' : '-1.2%',
+      positive: pnl7d >= 0,
     },
     {
-      label: 'Risk Exposure',
-      value: '₹38.6L',
-      delta: '-2.1%',
-      positive: true,
+      label: 'Total Capital',
+      value: formatCurrency(totalCapital, 0),
+      delta: totalCapital > 0 ? '+2.1%' : '0%',
+      positive: totalCapital > 0,
     },
     {
       label: 'Orders Pending',
-      value: '18',
-      delta: '+6',
+      value: formatNumber(pendingOrders),
+      delta: pendingOrders > 0 ? `+${pendingOrders}` : '0',
       positive: false,
     },
   ];
 
-  const reportBreakdown = [
-    {
-      segment: 'Breakout Setups',
-      trades: 42,
-      winRate: '64%',
-      pnl: '+₹12,830',
-      positive: true,
-    },
-    {
-      segment: 'Intraday Momentum',
-      trades: 35,
-      winRate: '58%',
-      pnl: '+₹8,410',
-      positive: true,
-    },
-    {
-      segment: 'Swing Reversal',
-      trades: 18,
-      winRate: '41%',
-      pnl: '-₹2,640',
-      positive: false,
-    },
-    {
-      segment: 'Options Hedging',
-      trades: 27,
-      winRate: '52%',
-      pnl: '+₹4,120',
-      positive: true,
-    },
-  ];
+  // Group trades by stock/strategy (simplified)
+  const reportBreakdown = useMemo(() => {
+    const stockGroups: Record<string, { trades: Trade[] }> = {};
+    trades.forEach((trade) => {
+      if (!stockGroups[trade.stock]) {
+        stockGroups[trade.stock] = { trades: [] };
+      }
+      stockGroups[trade.stock].trades.push(trade);
+    });
+
+    return Object.entries(stockGroups)
+      .slice(0, 4)
+      .map(([stock, group]) => {
+        const stockTrades = group.trades;
+        const wins = stockTrades.filter((t) => (t.pnl || 0) > 0).length;
+        const winRate = stockTrades.length > 0 ? Math.round((wins / stockTrades.length) * 100) : 0;
+        const pnl = stockTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+        return {
+          segment: stock,
+          trades: stockTrades.length,
+          winRate: `${winRate}%`,
+          pnl: formatCurrency(pnl),
+          positive: pnl >= 0,
+        };
+      });
+  }, [trades]);
 
   return (
     <DashboardLayout title="Dashboard">
       {/* Welcome Card */}
       <div className="bg-primary-600 rounded-xl p-6 mb-6 text-white">
         <h2 className="text-2xl font-semibold mb-2">
-          Welcome back, {user?.name || 'Admin'}! 👋
+          Welcome back, {user?.name || 'Teacher'}! 👋
         </h2>
         <p className="text-primary-100">
-          Here's what's happening with your platform today
+          Here's what's happening with your trading dashboard today
         </p>
       </div>
 

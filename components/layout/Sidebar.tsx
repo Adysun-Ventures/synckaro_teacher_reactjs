@@ -7,13 +7,19 @@ import {
   UserGroupIcon,
   Cog6ToothIcon,
   ChartBarIcon,
+  ShoppingCartIcon,
+  UserPlusIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import { Logo } from './Logo';
 import { cn } from '@/lib/utils';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Teachers', href: '/teachers', icon: UserGroupIcon },
+  { name: 'Students', href: '/students', icon: UserGroupIcon },
+  { name: 'Trading', href: '/trading', icon: ShoppingCartIcon },
+  { name: 'Connections', href: '/connections', icon: UserPlusIcon },
+  { name: 'Broker', href: '/broker', icon: CurrencyDollarIcon },
   { name: 'Reports', href: '/reports', icon: ChartBarIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];

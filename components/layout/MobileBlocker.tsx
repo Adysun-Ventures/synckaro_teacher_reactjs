@@ -18,7 +18,7 @@ export function MobileBlocker() {
           Desktop Required
         </h2>
         <p className="mb-6 text-neutral-600">
-          The SyncKaro Admin dashboard is designed for desktop and tablet devices to provide the best experience for managing your trading platform.
+          The SyncKaro Teacher dashboard is designed for desktop and tablet devices to provide the best experience for managing your students and trades.
         </p>
         <div className="rounded-lg bg-neutral-50 p-4 text-left">
           <p className="mb-2 text-sm font-medium text-neutral-700">
