@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckIcon, XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { SearchBar } from '@/components/common/SearchBar';
@@ -107,17 +108,6 @@ export default function IncomingRequestsPage() {
     return null;
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const getStudentInfo = (studentId: string) => {
     return students.find((s) => s.id === studentId);
   };
@@ -125,26 +115,35 @@ export default function IncomingRequestsPage() {
   return (
     <DashboardLayout title="Incoming Connection Requests">
       <div className="space-y-6">
-        {/* Filters */}
-        <Card padding="lg">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-64">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search students..."
-                className="w-full"
-              />
+        {/* Filters with Title */}
+        <Card 
+          padding="lg"
+          className="border border-neutral-200 bg-white shadow-sm"
+        >
+          <div className="space-y-4">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader title="Incoming Connection Requests" />
+            
+            {/* Search and Filter Controls */}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex-1 min-w-64">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search students..."
+                  className="w-full"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | ConnectionRequest['status'])}
+                className="px-4 py-2.5 text-sm text-neutral-700 bg-white border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600 transition-all duration-200 hover:border-neutral-400"
+              >
+                <option value="all" className="text-neutral-700">All Status</option>
+                <option value="pending" className="text-neutral-700">Pending</option>
+                <option value="accepted" className="text-neutral-700">Accepted</option>
+              </select>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | ConnectionRequest['status'])}
-              className="px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
-            </select>
           </div>
         </Card>
 
@@ -161,72 +160,66 @@ export default function IncomingRequestsPage() {
             />
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-4">
             {filteredRequests.map((request) => {
               const student = getStudentInfo(request.studentId);
               if (!student) return null;
 
               return (
-                <Card key={request.id} padding="lg">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex items-start gap-4">
+                <Card 
+                  key={request.id} 
+                  padding="lg"
+                  className="border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:border-primary-200 transition-all duration-200"
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    {/* Avatar with enhanced styling */}
+                    <div className="relative">
                       <Avatar
                         name={student.name}
-                        size="lg"
+                        size="2xl"
                         showStatus
                         statusColor={request.status === 'accepted' ? 'success' : 'warning'}
                       />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-neutral-900 mb-1">
-                          {student.name}
-                        </h3>
-                        <div className="space-y-1 text-sm text-neutral-600">
-                          <p>{student.email}</p>
-                          <p>{student.mobile}</p>
-                          <p className="text-xs text-neutral-500">
-                            Requested: {formatDate(request.createdAt)}
-                          </p>
-                          {request.respondedAt && (
-                            <p className="text-xs text-neutral-500">
-                              Responded: {formatDate(request.respondedAt)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                    </div>
+                    
+                    {/* Student Name */}
+                    <div className="w-full">
+                      <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                        {student.name}
+                      </h3>
+                      
+                      
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={cn(
-                          'px-3 py-1 rounded-full text-xs font-medium',
-                          request.status === 'pending'
-                            ? 'bg-warning-100 text-warning-700'
-                            : request.status === 'accepted'
-                            ? 'bg-success-100 text-success-700'
-                            : 'bg-neutral-100 text-neutral-700'
-                        )}
+                    {/* Action Buttons - Icon Only */}
+                    <div className="flex items-center justify-center gap-3 w-full">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/students/${student.id}`)}
+                        className="h-10 w-10 rounded-full bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
+                        aria-label="View profile"
                       >
-                        {request.status}
-                      </span>
+                        <EyeIcon className="h-5 w-5" />
+                      </button>
                       {request.status === 'pending' && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="success"
-                            size="sm"
+                        <>
+                          <button
+                            type="button"
                             onClick={() => handleAccept(request.id)}
-                            icon={<CheckIcon className="h-4 w-4" />}
+                            className="h-10 w-10 rounded-full bg-success-600 text-white hover:bg-success-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2 flex items-center justify-center"
+                            aria-label="Accept request"
                           >
-                            Accept
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
+                            <CheckIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleReject(request.id)}
-                            icon={<XMarkIcon className="h-4 w-4" />}
+                            className="h-10 w-10 rounded-full bg-danger-500 text-white hover:bg-danger-600 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2 flex items-center justify-center"
+                            aria-label="Reject request"
                           >
-                            Reject
-                          </Button>
-                        </div>
+                            <XMarkIcon className="h-5 w-5" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
