@@ -182,13 +182,14 @@ export default function EditStudentPage() {
     <DashboardLayout title="Edit Student">
       <div className="space-y-6">
         {/* Back Button */}
-        <Button
-          variant="ghost"
+        <button
+          type="button"
           onClick={() => router.back()}
-          icon={<ArrowLeftIcon className="h-4 w-4" />}
+          className="inline-flex h-9 items-center gap-2 rounded-3xl border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
         >
+          <ArrowLeftIcon className="h-4 w-4" />
           Back
-        </Button>
+        </button>
 
         <Card padding="lg">
           <div className="flex items-center justify-between mb-6">
