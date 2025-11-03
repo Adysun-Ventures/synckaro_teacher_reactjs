@@ -9,6 +9,7 @@ import {
   DevicePhoneMobileIcon,
   UserGroupIcon,
   ChartBarIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -138,7 +139,29 @@ export default function StudentProfilePage() {
         <Card padding="lg" className="border border-neutral-200 bg-white">
           <div className="space-y-6">
             {/* Page Header with Back Button and Centered Title */}
-            <PageHeader title="Student Details" />
+            <PageHeader
+              title="Student Details"
+              rightContent={
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/students/${studentId}/stats`)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 hover:border-primary-400"
+                  >
+                    <ChartBarIcon className="h-4 w-4" />
+                    Stats
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/students/${studentId}/logs`)}
+                    className="inline-flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 hover:border-primary-400"
+                  >
+                    <DocumentTextIcon className="h-4 w-4" />
+                    Logs
+                  </button>
+                </div>
+              }
+            />
 
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-4">

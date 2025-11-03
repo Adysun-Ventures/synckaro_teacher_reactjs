@@ -14,7 +14,8 @@ import {
   XMarkIcon,
   TrashIcon,
   EyeIcon,
-  PencilIcon,
+  ChartBarIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -394,12 +395,22 @@ export default function StudentsPage() {
                           <button
                             type="button"
                             onClick={() =>
-                              router.push(`/students/${student.id}/edit`)
+                              router.push(`/students/${student.id}/stats`)
                             }
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-indigo-200 bg-indigo-50 text-indigo-600 transition-colors hover:bg-indigo-100"
-                            aria-label="Edit student"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-success-200 bg-success-50 text-success-600 transition-colors hover:bg-success-100"
+                            aria-label="View stats"
                           >
-                            <PencilIcon className="h-4 w-4" />
+                            <ChartBarIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              router.push(`/students/${student.id}/logs`)
+                            }
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-warning-200 bg-warning-50 text-warning-600 transition-colors hover:bg-warning-100"
+                            aria-label="View logs"
+                          >
+                            <DocumentTextIcon className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
