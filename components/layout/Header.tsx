@@ -17,7 +17,7 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
   const pathname = usePathname();
   
   const auth = storage.getAuth();
-  const userName = auth?.user?.name || 'Admin';
+  const userName = auth?.user?.name || 'Teacher';
 
   const isProfilePage = pathname === '/profile';
   const isSettingsPage = pathname === '/settings';

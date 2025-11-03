@@ -23,7 +23,7 @@ import { CompactTradeRow } from '@/components/teachers/CompactTradeRow';
 import { storage } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 import { isAuthenticated } from '@/services/authService';
-import { Student, Teacher, Trade } from '@/types';
+import { Student, Trade } from '@/types';
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -49,7 +49,6 @@ export default function StudentProfilePage() {
   const studentId = params.id as string;
 
   const [student, setStudent] = useState<Student | null>(null);
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
@@ -65,15 +64,11 @@ export default function StudentProfilePage() {
     const foundStudent = students.find((s: Student) => s.id === studentId);
 
     if (!foundStudent) {
-      router.push('/teachers');
+      router.push('/students');
       return;
     }
 
     setStudent(foundStudent);
-
-    const teachers = storage.getItem('teachers') || [];
-    const relatedTeacher = teachers.find((t: Teacher) => t.id === foundStudent.teacherId) || null;
-    setTeacher(relatedTeacher);
 
     const allTrades = storage.getItem('trades') || [];
     const studentTrades = allTrades
@@ -149,15 +144,6 @@ export default function StudentProfilePage() {
             Back
           </button>
 
-          {teacher && (
-            <Link
-              href={`/teachers/${teacher.id}`}
-              className="inline-flex items-center text-sm text-neutral-600 transition-colors hover:text-neutral-900"
-            >
-              <UserGroupIcon className="mr-2 h-4 w-4" />
-              View Teacher
-            </Link>
-          )}
         </div>
 
         <Card gradient gradientFrom="from-indigo-900" gradientVia="via-indigo-600" gradientTo="to-purple-300" padding="lg">
@@ -187,9 +173,6 @@ export default function StudentProfilePage() {
             </div>
 
             <div className="flex flex-col items-start gap-2 md:items-end">
-              <div className="rounded-full border border-white/40 px-3 py-1 text-sm text-white/90">
-                Teacher: {teacher?.name ?? 'Unassigned'}
-              </div>
               <div className="flex items-center gap-3">
                 <span className="text-sm text-indigo-100">Status</span>
                 <Toggle enabled={student.status === 'active'} onChange={handleStatusToggle} />

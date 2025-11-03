@@ -111,7 +111,7 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap items-center gap-4 text-indigo-100">
                   <div className="flex items-center gap-2">
                     <EnvelopeIcon className="h-4 w-4" />
-                    <span>{user.email || 'admin@synckaro.com'}</span>
+                    <span>{user.email || 'teacher@synckaro.com'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <PhoneIcon className="h-4 w-4" />
@@ -119,7 +119,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <ChartBarIcon className="h-4 w-4" />
-                    <span>Administrator</span>
+                    <span>Teacher</span>
                   </div>
                 </div>
               </div>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
                   <EnvelopeIcon className="h-5 w-5 text-neutral-600" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-lg font-semibold text-neutral-900">{user.email || 'admin@synckaro.com'}</p>
+                  <p className="text-lg font-semibold text-neutral-900">{user.email || 'teacher@synckaro.com'}</p>
                   <p className="text-xs uppercase tracking-wide text-neutral-500 mt-1">Email Address</p>
                 </div>
               </div>

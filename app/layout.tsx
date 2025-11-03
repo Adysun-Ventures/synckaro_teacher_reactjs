@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SyncKaro Admin - Copy Trading Platform",
-  description: "Manage teachers, students, and trades on the SyncKaro copy trading platform",
+  title: "SyncKaro Teacher - Copy Trading Platform",
+  description: "Manage students, execute trades, and broker connections on the SyncKaro copy trading platform",
 };
 
 export default function RootLayout({

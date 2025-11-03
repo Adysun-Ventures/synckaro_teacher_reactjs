@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   BanknotesIcon,
@@ -32,113 +32,10 @@ import {
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
-import { isAuthenticated } from '@/services/authService';
+import { isAuthenticated, getCurrentUser } from '@/services/authService';
+import { storage } from '@/lib/storage';
+import { Trade, Student } from '@/types';
 import { cn } from '@/lib/utils';
-
-const summaryMetrics = [
-  {
-    label: 'Gross Volume (MTD)',
-    value: '₹ 64.8Cr',
-    delta: '+6.3%',
-    positive: true,
-    icon: BanknotesIcon,
-  },
-  {
-    label: 'Net Realized P&L',
-    value: '+₹ 4.7Cr',
-    delta: '+2.8%',
-    positive: true,
-    icon: PresentationChartLineIcon,
-  },
-  {
-    label: 'Win Rate',
-    value: '61.4%',
-    delta: '-1.7%',
-    positive: false,
-    icon: ArrowTrendingUpIcon,
-  },
-  {
-    label: 'Risk Score',
-    value: 'Moderate (42)',
-    delta: '-4 pts',
-    positive: true,
-    icon: ScaleIcon,
-  },
-];
-
-const strategyPerformance = [
-  {
-    segment: 'Breakout Momentum',
-    trades: 128,
-    pnl: '+₹ 18.4L',
-    hitRate: '67%',
-    avgHolding: '38m',
-    positive: true,
-  },
-  {
-    segment: 'Options Hedging',
-    trades: 86,
-    pnl: '+₹ 9.2L',
-    hitRate: '58%',
-    avgHolding: '4h 12m',
-    positive: true,
-  },
-  {
-    segment: 'Swing Reversal',
-    trades: 52,
-    pnl: '-₹ 3.6L',
-    hitRate: '43%',
-    avgHolding: '1d 7h',
-    positive: false,
-  },
-  {
-    segment: 'Index Arbitrage',
-    trades: 34,
-    pnl: '+₹ 4.1L',
-    hitRate: '72%',
-    avgHolding: '22m',
-    positive: true,
-  },
-];
-
-const riskAlerts = [
-  {
-    title: 'High leverage usage',
-    detail: '3 desks above 4.5x intraday exposure',
-    severity: 'warning' as const,
-    owner: 'Desk Ops',
-    updated: '12 mins ago',
-  },
-  {
-    title: 'Drawdown threshold nearing',
-    detail: 'Options Hedging desk at -7.8% (limit -10%)',
-    severity: 'critical' as const,
-    owner: 'Risk Control',
-    updated: '35 mins ago',
-  },
-  {
-    title: 'Capital idle > 48h',
-    detail: '₹2.3Cr parked in cash accounts without deployment',
-    severity: 'info' as const,
-    owner: 'Treasury',
-    updated: '1h ago',
-  },
-];
-
-const equityChartData = [
-  { date: 'Oct 1', nav: 48.2 },
-  { date: 'Oct 3', nav: 51.4 },
-  { date: 'Oct 5', nav: 54.1 },
-  { date: 'Oct 7', nav: 56.8 },
-  { date: 'Oct 9', nav: 59.3 },
-  { date: 'Oct 11', nav: 57.9 },
-  { date: 'Oct 13', nav: 60.3 },
-  { date: 'Oct 15', nav: 62.7 },
-  { date: 'Oct 17', nav: 63.9 },
-  { date: 'Oct 19', nav: 65.4 },
-  { date: 'Oct 21', nav: 66.8 },
-  { date: 'Oct 23', nav: 67.9 },
-];
 
 const deskContribution = [
   { desk: 'Momentum', weight: 32, color: '#16a34a' },
@@ -146,13 +43,6 @@ const deskContribution = [
   { desk: 'Options', weight: 18, color: '#f59e0b' },
   { desk: 'Swing', weight: 14, color: '#6366f1' },
   { desk: 'Discretionary', weight: 12, color: '#64748b' },
-];
-
-const orderFlowSeries = [
-  { label: 'Cash Equity', Buys: 62, Sells: 38 },
-  { label: 'Index Futures', Buys: 54, Sells: 46 },
-  { label: 'Options', Buys: 47, Sells: 53 },
-  { label: 'Currency', Buys: 41, Sells: 59 },
 ];
 
 const sectorExposure = [
@@ -227,6 +117,11 @@ function ProfitTooltip({ active, payload }: any) {
 
 export default function ReportsPage() {
   const router = useRouter();
+  const user = getCurrentUser();
+  const teacherId = user?.id || '';
+
+  const [trades, setTrades] = useState<Trade[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -234,9 +129,251 @@ export default function ReportsPage() {
     }
   }, [router]);
 
-  if (!isAuthenticated()) {
+  useEffect(() => {
+    if (teacherId) {
+      // Load teacher's trades
+      const allTrades = (storage.getItem('trades') || []) as Trade[];
+      const teacherTrades = allTrades
+        .filter((t) => t.teacherId === teacherId)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      setTrades(teacherTrades);
+
+      // Load teacher's students
+      const allStudents = (storage.getItem('students') || []) as Student[];
+      const teacherStudents = allStudents.filter((s) => s.teacherId === teacherId);
+      setStudents(teacherStudents);
+    }
+  }, [teacherId]);
+
+  if (!isAuthenticated() || !teacherId) {
     return null;
   }
+
+  // Calculate teacher's metrics
+  const formatCurrency = (value: number, fractionDigits = 0) => {
+    if (value >= 10000000) {
+      return `₹ ${(value / 10000000).toFixed(fractionDigits)}Cr`;
+    } else if (value >= 100000) {
+      return `₹ ${(value / 100000).toFixed(fractionDigits)}L`;
+    }
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(value);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-IN').format(value);
+  };
+
+  // Calculate metrics
+  const totalVolume = useMemo(() => {
+    return trades.reduce((sum, t) => sum + ((t.price || 0) * t.quantity), 0);
+  }, [trades]);
+
+  const totalPnL = useMemo(() => {
+    return trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+  }, [trades]);
+
+  const wins = trades.filter((t) => (t.pnl || 0) > 0).length;
+  const winRate = trades.length > 0 ? Math.round((wins / trades.length) * 100) : 0;
+
+  const totalCapital = useMemo(() => {
+    return students.reduce((sum, s) => sum + (s.currentCapital || s.initialCapital || 0), 0);
+  }, [students]);
+
+  // Calculate MTD volume (this month)
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const mtdTrades = useMemo(() => {
+    return trades.filter((t) => new Date(t.createdAt) >= firstDayOfMonth);
+  }, [trades, firstDayOfMonth]);
+
+  const mtdVolume = useMemo(() => {
+    return mtdTrades.reduce((sum, t) => sum + ((t.price || 0) * t.quantity), 0);
+  }, [mtdTrades]);
+
+  const summaryMetrics = [
+    {
+      label: 'Gross Volume (MTD)',
+      value: formatCurrency(mtdVolume, 1),
+      delta: '+6.3%', // Placeholder
+      positive: true,
+      icon: BanknotesIcon,
+    },
+    {
+      label: 'Net Realized P&L',
+      value: formatCurrency(totalPnL, 1),
+      delta: totalPnL >= 0 ? '+2.8%' : '-2.8%',
+      positive: totalPnL >= 0,
+      icon: PresentationChartLineIcon,
+    },
+    {
+      label: 'Win Rate',
+      value: `${winRate}%`,
+      delta: winRate >= 50 ? '+1.7%' : '-1.7%',
+      positive: winRate >= 50,
+      icon: ArrowTrendingUpIcon,
+    },
+    {
+      label: 'Total Capital',
+      value: formatCurrency(totalCapital, 0),
+      delta: '+4%', // Placeholder
+      positive: true,
+      icon: ScaleIcon,
+    },
+  ];
+
+  // Calculate strategy performance from teacher's trades
+  const strategyPerformance = useMemo(() => {
+    // Group trades by stock (as proxy for strategy)
+    const stockGroups: Record<string, { trades: Trade[] }> = {};
+    trades.forEach((trade) => {
+      if (!stockGroups[trade.stock]) {
+        stockGroups[trade.stock] = { trades: [] };
+      }
+      stockGroups[trade.stock].trades.push(trade);
+    });
+
+    return Object.entries(stockGroups)
+      .slice(0, 4)
+      .map(([stock, group]) => {
+        const stockTrades = group.trades;
+        const wins = stockTrades.filter((t) => (t.pnl || 0) > 0).length;
+        const hitRate = stockTrades.length > 0 ? Math.round((wins / stockTrades.length) * 100) : 0;
+        const pnl = stockTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+
+        // Calculate average holding time (simplified - using trade creation to execution)
+        const avgHoldingMs = stockTrades.reduce((sum, t) => {
+          if (t.executedAt && t.createdAt) {
+            return sum + (new Date(t.executedAt).getTime() - new Date(t.createdAt).getTime());
+          }
+          return sum + 0;
+        }, 0);
+        const avgHoldingMinutes = stockTrades.length > 0 ? avgHoldingMs / stockTrades.length / 60000 : 0;
+        const avgHolding =
+          avgHoldingMinutes < 60
+            ? `${Math.round(avgHoldingMinutes)}m`
+            : avgHoldingMinutes < 1440
+            ? `${Math.round(avgHoldingMinutes / 60)}h`
+            : `${Math.round(avgHoldingMinutes / 1440)}d`;
+
+        return {
+          segment: stock,
+          trades: stockTrades.length,
+          pnl: formatCurrency(pnl),
+          hitRate: `${hitRate}%`,
+          avgHolding,
+          positive: pnl >= 0,
+        };
+      });
+  }, [trades]);
+
+  // Calculate risk alerts based on teacher's data
+  const riskAlerts = useMemo(() => {
+    const alerts: Array<{
+      title: string;
+      detail: string;
+      severity: 'warning' | 'critical' | 'info';
+      owner: string;
+      updated: string;
+    }> = [];
+
+    // Check for pending trades
+    const pendingTrades = trades.filter((t) => t.status === 'pending').length;
+    if (pendingTrades > 10) {
+      alerts.push({
+        title: 'High pending orders',
+        detail: `${pendingTrades} orders pending execution`,
+        severity: 'warning' as const,
+        owner: 'Trading Desk',
+        updated: 'Just now',
+      });
+    }
+
+    // Check for drawdown
+    if (totalPnL < -100000) {
+      alerts.push({
+        title: 'Drawdown threshold nearing',
+        detail: `Current P&L: ${formatCurrency(totalPnL)}`,
+        severity: 'critical' as const,
+        owner: 'Risk Control',
+        updated: 'Just now',
+      });
+    }
+
+    // Check for inactive students
+    const inactiveStudents = students.filter((s) => s.status === 'inactive').length;
+    if (inactiveStudents > 0) {
+      alerts.push({
+        title: 'Inactive students',
+        detail: `${inactiveStudents} student${inactiveStudents !== 1 ? 's' : ''} currently inactive`,
+        severity: 'info' as const,
+        owner: 'Student Management',
+        updated: 'Just now',
+      });
+    }
+
+    return alerts;
+  }, [trades, students, totalPnL]);
+
+  // Calculate equity curve from teacher's trades
+  const equityChartData = useMemo(() => {
+    // Group trades by date and calculate cumulative P&L
+    const dailyPnL: Record<string, number> = {};
+    trades.forEach((trade) => {
+      const date = new Date(trade.createdAt).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+      });
+      if (!dailyPnL[date]) {
+        dailyPnL[date] = 0;
+      }
+      dailyPnL[date] += trade.pnl || 0;
+    });
+
+    // Convert to array and calculate cumulative
+    let cumulative = totalCapital || 0;
+    return Object.entries(dailyPnL)
+      .slice(0, 12)
+      .map(([date, pnl]) => {
+        cumulative += pnl;
+        return {
+          date,
+          nav: cumulative / 1000000, // Convert to Cr for display
+        };
+      });
+  }, [trades, totalCapital]);
+
+  // Calculate order flow mix from teacher's trades
+  const orderFlowSeries = useMemo(() => {
+    // Group trades by exchange
+    const exchangeGroups: Record<'NSE' | 'BSE', { buys: number; sells: number }> = {
+      NSE: { buys: 0, sells: 0 },
+      BSE: { buys: 0, sells: 0 },
+    };
+
+    trades.forEach((trade) => {
+      if (trade.type === 'BUY') {
+        exchangeGroups[trade.exchange].buys += 1;
+      } else {
+        exchangeGroups[trade.exchange].sells += 1;
+      }
+    });
+
+    return Object.entries(exchangeGroups).map(([exchange, data]) => {
+      const total = data.buys + data.sells;
+      const buysPercent = total > 0 ? Math.round((data.buys / total) * 100) : 0;
+      const sellsPercent = total > 0 ? Math.round((data.sells / total) * 100) : 0;
+      return {
+        label: exchange,
+        Buys: buysPercent,
+        Sells: sellsPercent,
+      };
+    });
+  }, [trades]);
 
   // Transform data for diverging bar chart (Sells as negative values)
   const divergingOrderFlowData = useMemo(
@@ -246,7 +383,7 @@ export default function ReportsPage() {
         Buys: item.Buys,
         Sells: -item.Sells, // Negative for diverging chart
       })),
-    []
+    [orderFlowSeries]
   );
 
   return (
