@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserPlusIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { SearchBar } from '@/components/common/SearchBar';
@@ -99,24 +100,27 @@ export default function SearchZombieStudentsPage() {
   }
 
   return (
-    <DashboardLayout title="Search Zombie Students">
+    <DashboardLayout title="Search Students">
       <div className="space-y-6">
-        {/* Search */}
-        <Card padding="lg">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-              Search Zombie Students
-            </h3>
-            <p className="text-sm text-neutral-500">
-              Find students who are not associated with any teacher. Send them connection requests.
-            </p>
+        {/* Search with Title */}
+        <Card 
+          padding="lg"
+          className="border border-neutral-200 bg-white shadow-sm"
+        >
+          <div className="space-y-4">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader title="Search Students" />
+            
+            {/* Search Controls */}
+            <div className="pt-2">
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search by name, email, or mobile..."
+                className="w-full"
+              />
+            </div>
           </div>
-          <SearchBar
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search by name, email, or mobile..."
-            className="w-full"
-          />
         </Card>
 
         {/* Students List */}

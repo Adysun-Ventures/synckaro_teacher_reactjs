@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { SearchBar } from '@/components/common/SearchBar';
@@ -113,27 +114,36 @@ export default function OutgoingRequestsPage() {
   return (
     <DashboardLayout title="Outgoing Connection Requests">
       <div className="space-y-6">
-        {/* Filters */}
-        <Card padding="lg">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-64">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search students..."
-                className="w-full"
-              />
+        {/* Filters with Title */}
+        <Card 
+          padding="lg"
+          className="border border-neutral-200 bg-white shadow-sm"
+        >
+          <div className="space-y-4">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader title="Outgoing Connection Requests" />
+            
+            {/* Search and Filter Controls */}
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex-1 min-w-64">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search students..."
+                  className="w-full"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | ConnectionRequest['status'])}
+                className="px-4 py-2.5 text-sm text-neutral-700 bg-white border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600 transition-all duration-200 hover:border-neutral-400"
+              >
+                <option value="all" className="text-neutral-700">All Status</option>
+                <option value="pending" className="text-neutral-700">Pending</option>
+                <option value="accepted" className="text-neutral-700">Accepted</option>
+                <option value="rejected" className="text-neutral-700">Rejected</option>
+              </select>
             </div>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | ConnectionRequest['status'])}
-              className="px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="accepted">Accepted</option>
-              <option value="rejected">Rejected</option>
-            </select>
           </div>
         </Card>
 
