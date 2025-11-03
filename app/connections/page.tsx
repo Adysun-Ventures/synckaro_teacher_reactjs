@@ -261,7 +261,12 @@ export default function ConnectionsPage() {
                   return (
                     <div
                       key={req.id}
-                      className="flex items-center gap-2.5 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 hover:border-primary-200 transition-all duration-200"
+                      onClick={() => {
+                        if (req.student) {
+                          router.push(`/students/${req.student.id}`);
+                        }
+                      }}
+                      className="flex items-center gap-2.5 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 hover:border-primary-200 transition-all duration-200 cursor-pointer"
                     >
                       <Avatar
                         name={req.student.name}
@@ -306,7 +311,12 @@ export default function ConnectionsPage() {
                   return (
                     <div
                       key={req.id}
-                      className="flex items-center gap-2.5 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 hover:border-warning-200 transition-all duration-200"
+                      onClick={() => {
+                        if (req.student) {
+                          router.push(`/students/${req.student.id}`);
+                        }
+                      }}
+                      className="flex items-center gap-2.5 p-3 rounded-lg border border-neutral-200 hover:bg-neutral-50 hover:border-warning-200 transition-all duration-200 cursor-pointer"
                     >
                       <Avatar
                         name={req.student.name}
