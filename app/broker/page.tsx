@@ -4,6 +4,7 @@ import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -164,109 +165,138 @@ export default function BrokerPage() {
   return (
     <DashboardLayout title="Broker Configuration">
       <div className="space-y-6">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          icon={<ArrowLeftIcon className="h-4 w-4" />}
-        >
-          Back
-        </Button>
-
         <Card padding="lg">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-semibold text-neutral-900">
-                Your Broker Configuration
-              </h2>
-              <p className="text-sm text-neutral-500 mt-1">
-                Configure your broker credentials to execute trades
-              </p>
-            </div>
-            {/* Connection Status */}
-            {connectionStatus && (
-              <div className="flex items-center gap-2">
-                {connectionStatus === 'connected' ? (
-                  <>
-                    <CheckCircleIcon className="h-5 w-5 text-success-600" />
-                    <span className="text-sm font-medium text-success-700">Connected</span>
-                  </>
-                ) : connectionStatus === 'testing' ? (
-                  <>
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
-                    <span className="text-sm font-medium text-neutral-700">Testing...</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircleIcon className="h-5 w-5 text-danger-600" />
-                    <span className="text-sm font-medium text-danger-700">Disconnected</span>
-                  </>
-                )}
-              </div>
-            )}
+          <div className="space-y-4">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader 
+              title="Broker Configuration"
+              rightContent={
+                connectionStatus && (
+                  <div className="flex items-center gap-2">
+                    {connectionStatus === 'connected' ? (
+                      <>
+                        <CheckCircleIcon className="h-5 w-5 text-success-600" />
+                        <span className="text-sm font-medium text-success-700">Connected</span>
+                      </>
+                    ) : connectionStatus === 'testing' ? (
+                      <>
+                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
+                        <span className="text-sm font-medium text-neutral-700">Testing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircleIcon className="h-5 w-5 text-danger-600" />
+                        <span className="text-sm font-medium text-danger-700">Disconnected</span>
+                      </>
+                    )}
+                  </div>
+                )
+              }
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Broker Provider */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                Broker Provider *
-              </label>
-              <select
-                value={formData.brokerProvider}
-                onChange={(e) => handleChange('brokerProvider', e.target.value)}
-                className={cn(
-                  'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
-                  'focus:outline-none focus:ring-2 focus:ring-offset-0',
-                  errors.brokerProvider
-                    ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
-                    : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
+          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+            <div className="grid gap-4 md:grid-cols-4">
+              {/* Broker Provider */}
+              <div>
+                <div className="mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700">
+                    Broker Provider <span className="text-danger-500">*</span>
+                  </label>
+                </div>
+                <select
+                  value={formData.brokerProvider}
+                  onChange={(e) => handleChange('brokerProvider', e.target.value)}
+                  className={cn(
+                    'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-0',
+                    errors.brokerProvider
+                      ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
+                      : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
+                  )}
+                  required
+                >
+                  <option value="" className="text-neutral-700">Select broker provider</option>
+                  {BROKER_PROVIDERS.map((provider) => (
+                    <option key={provider} value={provider} className="text-neutral-700">
+                      {provider}
+                    </option>
+                  ))}
+                </select>
+                {errors.brokerProvider && (
+                  <p className="mt-1.5 text-sm text-danger-600">{errors.brokerProvider}</p>
                 )}
-                required
-              >
-                <option value="">Select broker provider</option>
-                {BROKER_PROVIDERS.map((provider) => (
-                  <option key={provider} value={provider}>
-                    {provider}
-                  </option>
-                ))}
-              </select>
-              {errors.brokerProvider && (
-                <p className="mt-1.5 text-sm text-danger-600">{errors.brokerProvider}</p>
-              )}
+              </div>
+
+              {/* API Key */}
+              <div>
+                <div className="mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700">
+                    API Key <span className="text-danger-500">*</span>
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  value={formData.apiKey}
+                  onChange={(e) => handleChange('apiKey', e.target.value)}
+                  placeholder="Enter your API key"
+                  className={cn(
+                    'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-0',
+                    errors.apiKey
+                      ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
+                      : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
+                  )}
+                  required
+                />
+                {errors.apiKey && (
+                  <p className="mt-1.5 text-sm text-danger-600">{errors.apiKey}</p>
+                )}
+              </div>
+
+              {/* API Secret */}
+              <div>
+                <div className="mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700">
+                    API Secret <span className="text-danger-500">*</span>
+                  </label>
+                </div>
+                <input
+                  type="password"
+                  value={formData.apiSecret}
+                  onChange={(e) => handleChange('apiSecret', e.target.value)}
+                  placeholder="Enter your API secret"
+                  className={cn(
+                    'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
+                    'focus:outline-none focus:ring-2 focus:ring-offset-0',
+                    errors.apiSecret
+                      ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
+                      : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
+                  )}
+                  required
+                />
+                {errors.apiSecret && (
+                  <p className="mt-1.5 text-sm text-danger-600">{errors.apiSecret}</p>
+                )}
+              </div>
+
+              {/* Access Token (Optional) */}
+              <div>
+                <div className="mb-1.5">
+                  <label className="block text-sm font-medium text-neutral-700">
+                    Access Token (Optional)
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  value={formData.accessToken}
+                  onChange={(e) => handleChange('accessToken', e.target.value)}
+                  placeholder="OAuth access token (if applicable)"
+                  className="w-full px-3 py-2 text-neutral-700 bg-white border border-neutral-300 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary-600 focus:border-primary-600"
+                />
+                <p className="mt-1.5 text-xs text-neutral-500">Required for OAuth-based broker connections</p>
+              </div>
             </div>
-
-            {/* API Key */}
-            <Input
-              label="API Key *"
-              type="text"
-              value={formData.apiKey}
-              onChange={(e) => handleChange('apiKey', e.target.value)}
-              error={errors.apiKey}
-              placeholder="Enter your API key"
-              required
-            />
-
-            {/* API Secret */}
-            <Input
-              label="API Secret *"
-              type="password"
-              value={formData.apiSecret}
-              onChange={(e) => handleChange('apiSecret', e.target.value)}
-              error={errors.apiSecret}
-              placeholder="Enter your API secret"
-              required
-            />
-
-            {/* Access Token (Optional) */}
-            <Input
-              label="Access Token (Optional)"
-              type="text"
-              value={formData.accessToken}
-              onChange={(e) => handleChange('accessToken', e.target.value)}
-              placeholder="OAuth access token (if applicable)"
-              helperText="Required for OAuth-based broker connections"
-            />
 
             {/* Error Message */}
             {errors.submit && (
