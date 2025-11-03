@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Card } from '@/components/common/Card';
 import { Avatar } from '@/components/common/Avatar';
 import { StatusBadge } from '@/components/common/StatusBadge';
@@ -134,85 +135,79 @@ export default function StudentProfilePage() {
   return (
     <DashboardLayout title="Student Profile">
       <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="inline-flex h-9 items-center gap-2 rounded-3xl border border-neutral-200 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:border-neutral-300 hover:bg-neutral-50"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back
-          </button>
+        <Card padding="lg" className="border border-neutral-200 bg-white">
+          <div className="space-y-6">
+            {/* Page Header with Back Button and Centered Title */}
+            <PageHeader title="Student Details" />
 
-        </div>
-
-        <Card gradient gradientFrom="from-indigo-900" gradientVia="via-indigo-600" gradientTo="to-purple-300" padding="lg">
-          <div className="flex flex-col gap-6 text-white md:flex-row md:items-center md:justify-between">
-            <div className="flex items-start gap-4">
-              <Avatar name={student.name} size="2xl" showStatus statusColor={student.status === 'active' ? 'success' : 'danger'} />
-              <div>
-                <div className="mb-2 flex items-center gap-3">
-                  <h1 className="text-3xl font-bold">{student.name}</h1>
-                  <StatusBadge status={student.status} className="border-white/40 bg-white/20 text-white" />
-                </div>
-                <div className="flex flex-wrap items-center gap-4 text-indigo-100">
-                  <div className="flex items-center gap-2">
-                    <EnvelopeIcon className="h-4 w-4" />
-                    <span>{student.email}</span>
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-start gap-4">
+                <Avatar name={student.name} size="2xl" showStatus statusColor={student.status === 'active' ? 'success' : 'danger'} />
+                <div>
+                  <div className="mb-2 flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-neutral-900">{student.name}</h1>
+                    <StatusBadge status={student.status} />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <DevicePhoneMobileIcon className="h-4 w-4" />
-                    <span>{student.mobile}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <ChartBarIcon className="h-4 w-4" />
-                    <span>Joined {formatDate(student.joinedDate)}</span>
+                  <div className="flex flex-wrap items-center gap-4 text-neutral-600">
+                    <div className="flex items-center gap-2">
+                      <EnvelopeIcon className="h-4 w-4 text-neutral-500" />
+                      <span>{student.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DevicePhoneMobileIcon className="h-4 w-4 text-neutral-500" />
+                      <span>{student.mobile}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ChartBarIcon className="h-4 w-4 text-neutral-500" />
+                      <span>Joined {formatDate(student.joinedDate)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex flex-col items-start gap-2 md:items-end">
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-indigo-100">Status</span>
-                <Toggle enabled={student.status === 'active'} onChange={handleStatusToggle} />
+              <div className="flex flex-col items-start gap-2 md:items-end">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-neutral-700">Status</span>
+                  <Toggle enabled={student.status === 'active'} onChange={handleStatusToggle} />
+                </div>
               </div>
             </div>
           </div>
         </Card>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card padding="lg">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Initial Capital</p>
-            <p className="mt-1 text-3xl font-semibold text-neutral-900">
+            <p className="text-3xl font-semibold text-neutral-900 mb-1">
               {formatCurrency(student.initialCapital || 0)}
             </p>
+            <p className="text-xs uppercase tracking-wide text-neutral-500">Initial Capital</p>
           </Card>
           <Card padding="lg">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">Current Capital</p>
-            <p className="mt-1 text-3xl font-semibold text-neutral-900">
+            <p className="text-3xl font-semibold text-neutral-900 mb-1">
               {formatCurrency(student.currentCapital || 0)}
             </p>
+            <p className="text-xs uppercase tracking-wide text-neutral-500">Current Capital</p>
           </Card>
           <Card padding="lg">
-            <p className="text-xs uppercase tracking-wide text-neutral-500">P&amp;L</p>
             <p
               className={cn(
-                'mt-1 text-3xl font-semibold',
+                'text-3xl font-semibold mb-1',
                 isPositive ? 'text-success-600' : 'text-danger-600'
               )}
             >
               {formatCurrency(pnl)}
             </p>
+            <p className="text-xs uppercase tracking-wide text-neutral-500">P&amp;L</p>
+          </Card>
+          <Card padding="lg">
+            <p className="text-3xl font-semibold text-neutral-900 mb-1">
+              {student.strategy || 'No strategy documented yet.'}
+            </p>
+            <p className="text-xs uppercase tracking-wide text-neutral-500">Strategy</p>
           </Card>
         </div>
 
-        <Card padding="lg">
-          <p className="text-xs uppercase tracking-wide text-neutral-500">Strategy</p>
-          <p className="mt-1 text-sm text-neutral-700">
-            {student.strategy || 'No strategy documented yet.'}
-          </p>
-        </Card>
+
 
         <div>
           <div className="mb-4 flex items-center justify-between">
