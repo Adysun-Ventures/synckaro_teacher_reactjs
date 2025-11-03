@@ -301,7 +301,7 @@ function generateActivityLogs(
 /**
  * Generate zombie students (students without teacherId)
  */
-function createZombieStudents(count: number = 8): Student[] {
+export function createZombieStudents(count: number = 15): Student[] {
   const zombies: Student[] = [];
   let zombieCounter = 1000; // Start from high number to avoid conflicts
 
@@ -337,7 +337,7 @@ function createZombieStudents(count: number = 8): Student[] {
 /**
  * Generate connection requests for teacher-1
  */
-function createConnectionRequests(
+export function createConnectionRequests(
   teacher1: Teacher,
   teacher1Students: Student[],
   zombieStudents: Student[]
@@ -345,30 +345,40 @@ function createConnectionRequests(
   const requests: ConnectionRequest[] = [];
   let requestCounter = 1;
 
-  // Incoming requests: 2-3 zombie students send requests to teacher-1
-  const incomingCount = Math.min(3, zombieStudents.length);
+  // Incoming requests: 4-5 zombie students send requests to teacher-1
+  // Use recent timestamps (within last 7 days)
+  const now = Date.now();
+  const incomingCount = Math.min(5, zombieStudents.length);
   for (let idx = 0; idx < incomingCount; idx++) {
     const zombie = zombieStudents[idx];
+    // Create timestamps within last 7 days, more recent first
+    const daysAgo = (incomingCount - idx - 1); // Most recent first (0 days ago, 1 day ago, etc.)
+    const hoursAgo = idx * 2; // Vary by hours
+    const timestamp = new Date(now - (daysAgo * DAY) - (hoursAgo * 3600000));
     requests.push({
       id: `connection-incoming-${requestCounter++}`,
       studentId: zombie.id,
       teacherId: teacher1.id,
       status: 'pending',
-      createdAt: new Date(BASE_STUDENT_JOIN.getTime() + (1000 + idx) * 7 * DAY + idx * 3600000).toISOString(),
+      createdAt: timestamp.toISOString(),
     });
   }
 
-  // Outgoing requests: 2-3 requests from teacher-1 to zombie students
+  // Outgoing requests: 4-5 requests from teacher-1 to zombie students
   const outgoingStart = incomingCount;
-  const outgoingCount = Math.min(3, zombieStudents.length - outgoingStart);
+  const outgoingCount = Math.min(5, zombieStudents.length - outgoingStart);
   for (let idx = 0; idx < outgoingCount; idx++) {
     const zombie = zombieStudents[outgoingStart + idx];
+    // Create timestamps within last 7 days, more recent first
+    const daysAgo = (outgoingCount - idx - 1); // Most recent first
+    const hoursAgo = idx * 3; // Vary by hours (different pattern from incoming)
+    const timestamp = new Date(now - (daysAgo * DAY) - (hoursAgo * 3600000));
     requests.push({
       id: `connection-outgoing-${requestCounter++}`,
       studentId: zombie.id,
       teacherId: teacher1.id,
       status: 'pending',
-      createdAt: new Date(BASE_STUDENT_JOIN.getTime() + (1000 + outgoingStart + idx) * 7 * DAY + idx * 3600000).toISOString(),
+      createdAt: timestamp.toISOString(),
     });
   }
 
@@ -420,7 +430,7 @@ export function generateAllSeedData() {
   const activityLogs = generateActivityLogs(teachers, studentsByTeacher, tradesByTeacher);
 
   // Generate zombie students
-  const zombieStudents = createZombieStudents(8);
+  const zombieStudents = createZombieStudents(15);
 
   // Get teacher-1 for connection requests and broker configs
   const teacher1 = teachers.find((t) => t.id === 'teacher-1');
