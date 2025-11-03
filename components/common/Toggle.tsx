@@ -19,7 +19,7 @@ export function Toggle({ enabled, onChange, className, label }: ToggleProps) {
         onClick={() => onChange(!enabled)}
         className={cn(
           'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
-          enabled ? 'bg-primary-600' : 'bg-neutral-200'
+          enabled ? 'bg-primary-600' : 'bg-danger-500'
         )}
         role="switch"
         aria-checked={enabled}
