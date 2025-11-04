@@ -160,67 +160,96 @@ export default function IncomingRequestsPage() {
             />
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredRequests.map((request) => {
               const student = getStudentInfo(request.studentId);
               if (!student) return null;
 
+              const requestDate = new Date(request.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              });
+
               return (
                 <Card 
                   key={request.id} 
-                  padding="lg"
-                  className="border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:border-primary-200 transition-all duration-200"
+                  padding="md"
+                  className="border border-neutral-200 bg-white shadow-sm hover:shadow-md hover:border-primary-200 transition-all duration-200"
                 >
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    {/* Avatar with enhanced styling */}
-                    <div className="relative">
+                  <div className="flex items-start gap-3">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0">
                       <Avatar
                         name={student.name}
-                        size="2xl"
+                        size="md"
                         showStatus
                         statusColor={request.status === 'accepted' ? 'success' : 'warning'}
                       />
                     </div>
                     
-                    {/* Student Name */}
-                    <div className="w-full">
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                        {student.name}
-                      </h3>
+                    {/* Student Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="text-sm font-semibold text-neutral-900 truncate">
+                          {student.name}
+                        </h3>
+                        <span className={cn(
+                          "text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0",
+                          request.status === 'accepted' 
+                            ? "bg-success-100 text-success-700" 
+                            : "bg-warning-100 text-warning-700"
+                        )}>
+                          {request.status}
+                        </span>
+                      </div>
                       
-                      
-                    </div>
+                      <div className="space-y-1 text-xs text-neutral-600 mb-3">
+                        <p className="truncate" title={student.email}>
+                          {student.email}
+                        </p>
+                        <p className="truncate" title={student.mobile}>
+                          {student.mobile}
+                        </p>
+                        <p className="text-neutral-500">
+                          Requested: {requestDate}
+                        </p>
+                      </div>
 
-                    {/* Action Buttons - Icon Only */}
-                    <div className="flex items-center justify-center gap-3 w-full">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/students/${student.id}`)}
-                        className="h-10 w-10 rounded-full bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
-                        aria-label="View profile"
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                      </button>
-                      {request.status === 'pending' && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => handleAccept(request.id)}
-                            className="h-10 w-10 rounded-full bg-success-600 text-white hover:bg-success-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2 flex items-center justify-center"
-                            aria-label="Accept request"
-                          >
-                            <CheckIcon className="h-5 w-5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleReject(request.id)}
-                            className="h-10 w-10 rounded-full bg-danger-500 text-white hover:bg-danger-600 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2 flex items-center justify-center"
-                            aria-label="Reject request"
-                          >
-                            <XMarkIcon className="h-5 w-5" />
-                          </button>
-                        </>
-                      )}
+                      {/* Action Buttons - Icon Only */}
+                      <div className={cn(
+                        "grid place-items-center gap-3 pt-2 border-t border-neutral-100 w-full",
+                        request.status === 'pending' ? "grid-cols-3" : "grid-cols-1"
+                      )}>
+                        <button
+                          type="button"
+                          onClick={() => router.push(`/students/${student.id}`)}
+                          className="h-10 w-10 rounded-full bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
+                          aria-label="View profile"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                        </button>
+                        {request.status === 'pending' && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleAccept(request.id)}
+                              className="h-10 w-10 rounded-full bg-success-600 text-white hover:bg-success-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2 flex items-center justify-center"
+                              aria-label="Accept request"
+                            >
+                              <CheckIcon className="h-5 w-5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReject(request.id)}
+                              className="h-10 w-10 rounded-full bg-danger-500 text-white hover:bg-danger-600 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2 flex items-center justify-center"
+                              aria-label="Reject request"
+                            >
+                              <XMarkIcon className="h-5 w-5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>

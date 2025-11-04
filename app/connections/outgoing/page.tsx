@@ -92,17 +92,6 @@ export default function OutgoingRequestsPage() {
     return null;
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const getStudentInfo = (studentId: string) => {
     return students.find((s) => s.id === studentId);
   };
@@ -160,37 +149,29 @@ export default function OutgoingRequestsPage() {
             />
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredRequests.map((request) => {
               const student = getStudentInfo(request.studentId);
               if (!student) return null;
 
+              const sentDate = new Date(request.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              });
+
               return (
                 <Card 
                   key={request.id} 
-                  padding="lg"
-                  className="relative border border-neutral-200 bg-white shadow-sm hover:shadow-lg hover:border-primary-200 transition-all duration-200"
+                  padding="md"
+                  className="border border-neutral-200 bg-white shadow-sm hover:shadow-md hover:border-primary-200 transition-all duration-200"
                 >
-                  {/* Status Badge - Corner */}
-                  <span
-                    className={cn(
-                      'absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm z-10',
-                      request.status === 'pending'
-                        ? 'bg-warning-100 text-warning-700 border border-warning-200'
-                        : request.status === 'accepted'
-                        ? 'bg-success-100 text-success-700 border border-success-200'
-                        : 'bg-danger-100 text-danger-700 border border-danger-200'
-                    )}
-                  >
-                    {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                  </span>
-                  
-                  <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="flex items-start gap-3">
                     {/* Avatar */}
-                    <div className="relative">
+                    <div className="flex-shrink-0">
                       <Avatar
                         name={student.name}
-                        size="2xl"
+                        size="md"
                         showStatus
                         statusColor={
                           request.status === 'accepted'
@@ -202,45 +183,60 @@ export default function OutgoingRequestsPage() {
                       />
                     </div>
                     
-                    {/* Student Name */}
-                    <div className="w-full">
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                        {student.name}
-                      </h3>
-                      
-                      {/* Sent Date/Time */}
-                      <div className="space-y-1 text-xs text-neutral-500 leading-tight">
-                        <p>Sent: {formatDate(request.createdAt)}</p>
-                        
-                        {/* Response Date/Time - Only show if responded */}
-                        {request.respondedAt && (
-                          <p>
-                            Responded: {formatDate(request.respondedAt)}
-                          </p>
-                        )}
+                    {/* Student Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="text-sm font-semibold text-neutral-900 truncate">
+                          {student.name}
+                        </h3>
+                        <span className={cn(
+                          "text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0",
+                          request.status === 'accepted'
+                            ? "bg-success-100 text-success-700"
+                            : request.status === 'rejected'
+                            ? "bg-danger-100 text-danger-700"
+                            : "bg-warning-100 text-warning-700"
+                        )}>
+                          {request.status}
+                        </span>
                       </div>
-                    </div>
+                      
+                      <div className="space-y-1 text-xs text-neutral-600 mb-3">
+                        <p className="truncate" title={student.email}>
+                          {student.email}
+                        </p>
+                        <p className="truncate" title={student.mobile}>
+                          {student.mobile}
+                        </p>
+                        <p className="text-neutral-500">
+                          Sent: {sentDate}
+                        </p>
+                      </div>
 
-                    {/* Action Buttons - Icon Only */}
-                    <div className="flex items-center justify-center gap-3 w-full">
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/students/${student.id}`)}
-                        className="h-10 w-10 rounded-full bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
-                        aria-label="View profile"
-                      >
-                        <EyeIcon className="h-5 w-5" />
-                      </button>
-                      {request.status === 'pending' && (
+                      {/* Action Buttons - Icon Only */}
+                      <div className={cn(
+                        "grid place-items-center gap-3 pt-2 border-t border-neutral-100 w-full",
+                        request.status === 'pending' ? "grid-cols-2" : "grid-cols-1"
+                      )}>
                         <button
                           type="button"
-                          onClick={() => handleCancel(request.id)}
-                          className="h-10 w-10 rounded-full bg-danger-500 text-white hover:bg-danger-600 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2 flex items-center justify-center"
-                          aria-label="Cancel request"
+                          onClick={() => router.push(`/students/${student.id}`)}
+                          className="h-10 w-10 rounded-full bg-primary-600 text-white hover:bg-primary-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center"
+                          aria-label="View profile"
                         >
-                          <XMarkIcon className="h-5 w-5" />
+                          <EyeIcon className="h-5 w-5" />
                         </button>
-                      )}
+                        {request.status === 'pending' && (
+                          <button
+                            type="button"
+                            onClick={() => handleCancel(request.id)}
+                            className="h-10 w-10 rounded-full bg-danger-500 text-white hover:bg-danger-600 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-danger-500 focus:ring-offset-2 flex items-center justify-center"
+                            aria-label="Cancel request"
+                          >
+                            <XMarkIcon className="h-5 w-5" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Card>
