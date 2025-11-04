@@ -10,6 +10,7 @@ import { Toast } from '@/components/common/Toast';
 import { getPanicHandler } from '@/services/tradeService';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
+import { isTradingHours } from '@/lib/tradingHours';
 
 interface HeaderProps {
   title?: string;
@@ -20,6 +21,7 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
   const [panicConfirmOpen, setPanicConfirmOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [currentTime, setCurrentTime] = useState<string>('');
+  const [isTradingActive, setIsTradingActive] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -95,6 +97,19 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Check trading hours status periodically
+  useEffect(() => {
+    const checkTradingHours = () => {
+      const isActive = isTradingHours();
+      setIsTradingActive(isActive);
+    };
+
+    checkTradingHours(); // Check immediately
+    const interval = setInterval(checkTradingHours, 60000); // Check every 60 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -143,20 +158,29 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
                 {currentTime}
               </div>
             </div>
-            {/* Pulse Indicator - Shows system is active/live */}
-            <div className="relative flex items-center justify-center" aria-label="Active status indicator">
-              {/* Expanding pulse ring with larger scale */}
-              <div 
-                className="absolute h-2 w-2 rounded-full bg-green-500"
-                style={{
-                  animation: 'pulse-scale 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                  // To control speed: change '2s' above
-                  // Faster: use smaller value (e.g., '1s', '1.5s')
-                  // Slower: use larger value (e.g., '3s', '4s')
-                }}
-              ></div>
-              {/* Solid center dot */}
-              <div className="relative h-2 w-2 rounded-full bg-green-500"></div>
+            {/* Pulse Indicator - Shows trading hours status */}
+            <div className="relative flex items-center justify-center" aria-label="Trading hours status indicator">
+              {isTradingActive ? (
+                <>
+                  {/* Expanding pulse ring with larger scale - Green when trading is active */}
+                  <div 
+                    className="absolute h-2 w-2 rounded-full bg-green-500"
+                    style={{
+                      animation: 'pulse-scale 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                      // To control speed: change '1s' above
+                      // Faster: use smaller value (e.g., '0.5s', '0.75s')
+                      // Slower: use larger value (e.g., '2s', '3s')
+                    }}
+                  ></div>
+                  {/* Solid center dot - Green when trading is active */}
+                  <div className="relative h-2 w-2 rounded-full bg-green-500"></div>
+                </>
+              ) : (
+                <>
+                  {/* Red static dot - Shows when market is closed (weekends, holidays, or outside trading hours) */}
+                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
+                </>
+              )}
             </div>
           </div>
 
