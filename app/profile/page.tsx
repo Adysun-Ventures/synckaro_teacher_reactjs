@@ -99,27 +99,27 @@ export default function ProfilePage() {
     <DashboardLayout title="Profile">
       <div className="space-y-6">
         {/* Profile Card */}
-        <Card gradient gradientFrom="from-indigo-900" gradientVia="via-indigo-600" gradientTo="to-purple-300" padding="lg">
-          <div className="flex flex-col gap-6 text-white md:flex-row md:items-center md:justify-between">
+        <Card padding="lg" className="border border-neutral-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
               <Avatar name={user.name} size="2xl" showStatus statusColor="success" />
               <div>
-                <div className="mb-2 flex items-center gap-3">
-                  <h1 className="text-3xl font-bold">{user.name}</h1>
-                  <StatusBadge status="active" className="border-white/40 bg-white/20 text-white" />
+                <div className="mb-3 flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-neutral-900">{user.name}</h1>
+                  <StatusBadge status="active" className="border-success-200 bg-success-50 text-success-700" />
                 </div>
-                <div className="flex flex-wrap items-center gap-4 text-indigo-100">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-600">
                   <div className="flex items-center gap-2">
-                    <EnvelopeIcon className="h-4 w-4" />
+                    <EnvelopeIcon className="h-4 w-4 text-neutral-400" />
                     <span>{user.email || 'teacher@synckaro.com'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <PhoneIcon className="h-4 w-4" />
+                    <PhoneIcon className="h-4 w-4 text-neutral-400" />
                     <span>{user.mobile}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ChartBarIcon className="h-4 w-4" />
-                    <span>Teacher</span>
+                    <ChartBarIcon className="h-4 w-4 text-neutral-400" />
+                    <span className="font-medium">Teacher</span>
                   </div>
                 </div>
               </div>
@@ -129,10 +129,10 @@ export default function ProfilePage() {
                 variant="secondary"
                 size="sm"
                 onClick={() => router.push('/settings')}
-                className="border-white/40 bg-white/20 text-white hover:bg-white/30"
+                className="border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 hover:border-neutral-400"
               >
                 <Cog6ToothIcon className="h-4 w-4 mr-1.5" />
-                Edit
+                Edit Profile
               </Button>
             </div>
           </div>
