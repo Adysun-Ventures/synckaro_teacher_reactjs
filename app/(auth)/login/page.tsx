@@ -102,8 +102,15 @@ export default function LoginPage() {
     <div className="w-full max-w-md">
       <div className="bg-white rounded-xl shadow-lg p-8">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <Logo />
+        </div>
+
+        {/* Title */}
+        <div className="text-center mb-6">
+          <h2 className="text-sm font-semibold text-neutral-700 uppercase tracking-wide">
+            Teacher Dashboard
+          </h2>
         </div>
 
         {/* Mobile Step */}
