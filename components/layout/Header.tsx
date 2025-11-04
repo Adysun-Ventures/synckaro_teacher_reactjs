@@ -55,13 +55,9 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
           transform: scale(1);
           opacity: 0.75;
         }
-        50% {
+        100% {
           transform: scale(4);
           opacity: 0;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 0.75;
         }
       }
     `;
@@ -153,7 +149,10 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
               <div 
                 className="absolute h-2 w-2 rounded-full bg-green-500"
                 style={{
-                  animation: 'pulse-scale 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  animation: 'pulse-scale 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                  // To control speed: change '2s' above
+                  // Faster: use smaller value (e.g., '1s', '1.5s')
+                  // Slower: use larger value (e.g., '3s', '4s')
                 }}
               ></div>
               {/* Solid center dot */}
