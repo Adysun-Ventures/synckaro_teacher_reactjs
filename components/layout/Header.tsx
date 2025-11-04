@@ -18,6 +18,8 @@ interface HeaderProps {
 export function Header({ title = 'Dashboard' }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [panicConfirmOpen, setPanicConfirmOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState<string>('');
+  const [currentTime, setCurrentTime] = useState<string>('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -43,6 +45,59 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
       window.location.reload();
     }, 1000);
   };
+
+  // Add custom pulse animation
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse-scale {
+        0% {
+          transform: scale(1);
+          opacity: 0.75;
+        }
+        50% {
+          transform: scale(4);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 0.75;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Update current date and time every second
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date();
+      
+      // Format date: "Monday, 3 June"
+      const dateString = now.toLocaleDateString('en-IN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      });
+      setCurrentDate(dateString);
+      
+      // Format time: "9:30 AM" (without seconds)
+      const timeString = now.toLocaleTimeString('en-IN', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      }).replace(/\b(am|pm)\b/gi, (match) => match.toUpperCase());
+      setCurrentTime(timeString);
+    };
+
+    updateDateTime(); // Set initial date and time
+    const interval = setInterval(updateDateTime, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -80,6 +135,30 @@ export function Header({ title = 'Dashboard' }: HeaderProps) {
           {/* Panic Button */}
           <div className="flex items-center">
             <PanicButton onClick={handlePanic} label="Panic Button" />
+          </div>
+
+          {/* Current Date and Time */}
+          <div className="flex items-center gap-10">
+            <div className="text-center">
+              <div className="text-sm text-neutral-500 mb-0.5">
+                {currentDate}
+              </div>
+              <div className="text-base font-semibold text-neutral-700">
+                {currentTime}
+              </div>
+            </div>
+            {/* Pulse Indicator - Shows system is active/live */}
+            <div className="relative flex items-center justify-center" aria-label="Active status indicator">
+              {/* Expanding pulse ring with larger scale */}
+              <div 
+                className="absolute h-2 w-2 rounded-full bg-green-500"
+                style={{
+                  animation: 'pulse-scale 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                }}
+              ></div>
+              {/* Solid center dot */}
+              <div className="relative h-2 w-2 rounded-full bg-green-500"></div>
+            </div>
           </div>
 
           {/* User Dropdown */}
