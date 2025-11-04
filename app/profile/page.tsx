@@ -217,54 +217,84 @@ export default function ProfilePage() {
         </Card>
 
         {/* Account Stats */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card padding="lg">
-            <p className="text-2xl font-semibold text-neutral-900">Jan 2024</p>
-            <p className="text-xs uppercase tracking-wide text-neutral-500 mt-1">Platform Since</p>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Quick Stats */}
+          <Card padding="sm">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary-100 p-2 rounded-lg">
+                <CalendarIcon className="h-4 w-4 text-primary-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-semibold text-neutral-900">Jan 2024</p>
+                <p className="text-[10px] uppercase tracking-wide text-neutral-500 mt-0.5">Platform Since</p>
+              </div>
+            </div>
           </Card>
-          <Card padding="lg">
-            <p className="text-2xl font-semibold text-neutral-900">127</p>
-            <p className="text-xs uppercase tracking-wide text-neutral-500 mt-1">Total Logins</p>
+          <Card padding="sm">
+            <div className="flex items-center gap-3">
+              <div className="bg-success-100 p-2 rounded-lg">
+                <ChartBarIcon className="h-4 w-4 text-success-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-semibold text-neutral-900">127</p>
+                <p className="text-[10px] uppercase tracking-wide text-neutral-500 mt-0.5">Total Logins</p>
+              </div>
+            </div>
           </Card>
-          <Card padding="lg">
-            <p className="text-2xl font-semibold text-neutral-900">Today</p>
-            <p className="text-xs uppercase tracking-wide text-neutral-500 mt-1">Last Login</p>
+          <Card padding="sm">
+            <div className="flex items-center gap-3">
+              <div className="bg-warning-100 p-2 rounded-lg">
+                <ClockIcon className="h-4 w-4 text-warning-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-semibold text-neutral-900">Today</p>
+                <p className="text-[10px] uppercase tracking-wide text-neutral-500 mt-0.5">Last Login</p>
+              </div>
+            </div>
           </Card>
-          {loginActivity.map((activity, index) => {
-            const IconComponent = activity.icon;
-            return (
-              <Card key={index} padding="lg">
-                <div className="flex items-start gap-3 mb-3">
+          <Card padding="sm">
+            <div className="flex items-center gap-3">
+              <div className="bg-indigo-100 p-2 rounded-lg">
+                <DevicePhoneMobileIcon className="h-4 w-4 text-indigo-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-lg font-semibold text-neutral-900">{loginActivity.length}</p>
+                <p className="text-[10px] uppercase tracking-wide text-neutral-500 mt-0.5">Active Devices</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Login Devices */}
+        <Card padding="md">
+          <h3 className="text-sm font-semibold text-neutral-900 mb-4">Login Devices</h3>
+          <div className="space-y-3">
+            {loginActivity.map((activity, index) => {
+              const IconComponent = activity.icon;
+              return (
+                <div key={index} className="flex items-center gap-3 p-3 rounded-lg border border-neutral-200 bg-neutral-50/50 hover:bg-neutral-100/50 transition-colors">
                   <div className="bg-primary-100 p-2 rounded-lg flex-shrink-0">
-                    <IconComponent className="h-5 w-5 text-primary-600" />
+                    <IconComponent className="h-4 w-4 text-primary-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-base font-semibold text-neutral-900 truncate">{activity.device}</p>
-                    <p className="text-xs uppercase tracking-wide text-neutral-500 mt-1">Login Device</p>
+                    <p className="text-sm font-semibold text-neutral-900 truncate">{activity.device}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-neutral-500">
+                      <span>{activity.browser}</span>
+                      <span>•</span>
+                      <span>{activity.os}</span>
+                      <span>•</span>
+                      <span className="truncate">{activity.location}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xs font-medium text-neutral-700">{formatRelativeTime(activity.timestamp)}</p>
+                    <p className="text-[10px] text-neutral-500 mt-0.5">{activity.ip}</p>
                   </div>
                 </div>
-                <div className="space-y-1 border-t border-neutral-200 pt-3 mt-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500">Browser</span>
-                    <span className="font-medium text-neutral-700">{activity.browser}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500">OS</span>
-                    <span className="font-medium text-neutral-700">{activity.os}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500">Location</span>
-                    <span className="font-medium text-neutral-700">{activity.location}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-neutral-500">Last Login</span>
-                    <span className="font-medium text-neutral-700">{formatRelativeTime(activity.timestamp)}</span>
-                  </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </Card>
       </div>
     </DashboardLayout>
   );
