@@ -219,46 +219,46 @@ export default function StudentsPage() {
   return (
     <DashboardLayout title="Students">
       <Card padding="lg" className="border border-neutral-200 bg-white">
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Page Header with Title and Actions */}
           <div className="space-y-3">
             <PageHeader
               title="Students"
               rightContent={
                 <div className="flex flex-wrap items-center gap-3">
-                  <Button
-                    variant="primary"
-                    onClick={() => router.push("/students/create")}
-                    icon={<PlusIcon className="h-4 w-4" />}
-                  >
-                    Add Student
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => router.push("/students/bulk-upload")}
-                    icon={<ArrowUpTrayIcon className="h-4 w-4" />}
-                  >
-                    Bulk Upload
-                  </Button>
-                </div>
+            <Button
+              variant="primary"
+              onClick={() => router.push("/students/create")}
+              icon={<PlusIcon className="h-4 w-4" />}
+            >
+              Add Student
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/students/bulk-upload")}
+              icon={<ArrowUpTrayIcon className="h-4 w-4" />}
+            >
+              Bulk Upload
+            </Button>
+          </div>
               }
             />
 
             {/* Search Bar - Aligned to Right */}
             <div className="flex justify-end">
               <div className="w-full max-w-md">
-                <SearchBar
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Search students..."
-                  className="w-full"
-                />
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search students..."
+              className="w-full"
+            />
               </div>
-            </div>
           </div>
+        </div>
 
-          {/* Main Table Container */}
-          <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+        {/* Main Table Container */}
+        <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
           {/* Bulk Actions Toolbar */}
           {selectedIds.length > 0 && (
             <div className="border-b border-neutral-200 bg-neutral-50 px-4 py-3">
@@ -437,12 +437,12 @@ export default function StudentsPage() {
             onPageChange={setCurrentPage}
             onPageSizeChange={handlePageSizeChange}
           />
-          </div>
+        </div>
         </div>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
           open={deleteConfirmOpen}
           onClose={() => setDeleteConfirmOpen(false)}
           onConfirm={confirmDelete}

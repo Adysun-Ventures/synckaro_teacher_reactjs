@@ -206,37 +206,37 @@ export default function TradingPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-4">
-              {/* Stock Search with Autocomplete */}
+            {/* Stock Search with Autocomplete */}
               <div className="relative md:col-span-4">
                 <div className="mb-1.5">
                   <label className="block text-sm font-medium text-neutral-700">
                     Stock Symbol <span className="text-danger-500">*</span>
                   </label>
                 </div>
-                <Input
-                  type="text"
-                  value={formData.stock}
-                  onChange={(e) => handleChange('stock', e.target.value.toUpperCase())}
-                  onFocus={() => setShowSuggestions(true)}
-                  error={errors.stock}
-                  placeholder="Search stock (e.g., RELIANCE, TCS)"
-                  required
-                />
-                {showSuggestions && stockSuggestions.length > 0 && (
-                  <div className="absolute z-10 mt-1 w-full rounded-lg border border-neutral-200 bg-white shadow-lg max-h-48 overflow-y-auto">
-                    {stockSuggestions.map((stock) => (
-                      <button
-                        key={stock}
-                        type="button"
-                        onClick={() => handleStockSelect(stock)}
-                        className="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                      >
-                        {stock}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <Input
+                type="text"
+                value={formData.stock}
+                onChange={(e) => handleChange('stock', e.target.value.toUpperCase())}
+                onFocus={() => setShowSuggestions(true)}
+                error={errors.stock}
+                placeholder="Search stock (e.g., RELIANCE, TCS)"
+                required
+              />
+              {showSuggestions && stockSuggestions.length > 0 && (
+                <div className="absolute z-10 mt-1 w-full rounded-lg border border-neutral-200 bg-white shadow-lg max-h-48 overflow-y-auto">
+                  {stockSuggestions.map((stock) => (
+                    <button
+                      key={stock}
+                      type="button"
+                      onClick={() => handleStockSelect(stock)}
+                      className="w-full px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
+                    >
+                      {stock}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
               {/* Quantity */}
               <div>
@@ -245,34 +245,34 @@ export default function TradingPage() {
                     Quantity <span className="text-danger-500">*</span>
                   </label>
                 </div>
-                <Input
-                  type="number"
-                  value={formData.quantity}
-                  onChange={(e) => handleChange('quantity', e.target.value)}
-                  error={errors.quantity}
-                  placeholder="Number of shares"
-                  min="1"
-                  required
-                />
+              <Input
+                type="number"
+                value={formData.quantity}
+                onChange={(e) => handleChange('quantity', e.target.value)}
+                error={errors.quantity}
+                placeholder="Number of shares"
+                min="1"
+                required
+              />
               </div>
 
               {/* Price */}
               <div>
-                <Input
-                  label="Price (Optional)"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => handleChange('price', e.target.value)}
-                  error={errors.price}
-                  placeholder="Limit price (optional)"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
+              <Input
+                label="Price (Optional)"
+                type="number"
+                value={formData.price}
+                onChange={(e) => handleChange('price', e.target.value)}
+                error={errors.price}
+                placeholder="Limit price (optional)"
+                min="0"
+                step="0.01"
+              />
+            </div>
 
-              {/* Exchange Selection */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+            {/* Exchange Selection */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
                   Exchange <span className="text-danger-500">*</span>
                 </label>
                 <SegmentedToggle
@@ -283,12 +283,12 @@ export default function TradingPage() {
                   value={formData.exchange}
                   onChange={(value) => handleChange('exchange', value as 'NSE' | 'BSE')}
                   variant="primary"
-                />
-              </div>
+                  />
+            </div>
 
-              {/* Order Type */}
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+            {/* Order Type */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-2">
                   Order Type <span className="text-danger-500">*</span>
                 </label>
                 <SegmentedToggle

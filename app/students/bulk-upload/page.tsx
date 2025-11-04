@@ -297,8 +297,8 @@ Alice Williams,alice.williams@example.com,9876543213,9876543213,80000,8,Conserva
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-neutral-700">
-                  Upload CSV File
-                </label>
+                Upload CSV File
+              </label>
                 <button
                   type="button"
                   onClick={downloadSampleCSV}

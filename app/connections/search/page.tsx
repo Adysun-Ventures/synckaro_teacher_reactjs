@@ -113,12 +113,12 @@ export default function SearchZombieStudentsPage() {
             
             {/* Search Controls */}
             <div className="pt-2">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search by name, email, or mobile..."
-                className="w-full"
-              />
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search by name, email, or mobile..."
+            className="w-full"
+          />
             </div>
           </div>
         </Card>
@@ -156,12 +156,12 @@ export default function SearchZombieStudentsPage() {
                   <div className="flex flex-col items-center text-center space-y-4">
                     {/* Avatar */}
                     <div className="relative">
-                      <Avatar
-                        name={student.name}
+                    <Avatar
+                      name={student.name}
                         size="2xl"
-                        showStatus
-                        statusColor={student.status === 'active' ? 'success' : 'danger'}
-                      />
+                      showStatus
+                      statusColor={student.status === 'active' ? 'success' : 'danger'}
+                    />
                     </div>
                     
                     {/* Student Name */}
@@ -184,13 +184,13 @@ export default function SearchZombieStudentsPage() {
                       {!hasPendingRequest && (
                         <button
                           type="button"
-                          onClick={() => handleSendRequest(student)}
+                        onClick={() => handleSendRequest(student)}
                           className="h-10 w-10 rounded-full bg-success-600 text-white hover:bg-success-700 hover:scale-110 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-success-500 focus:ring-offset-2 flex items-center justify-center"
                           aria-label="Send request"
                         >
                           <UserPlusIcon className="h-5 w-5" />
                         </button>
-                      )}
+                    )}
                     </div>
                   </div>
                 </Card>

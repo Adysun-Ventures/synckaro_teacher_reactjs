@@ -115,33 +115,33 @@ export default function TradeHistoryPage() {
         <PageHeader title="Trade History" />
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-4 mb-4">
-          <div className="flex gap-3">
-            {/* Exchange Filter */}
-            <select
-              value={exchangeFilter}
-              onChange={(e) => setExchangeFilter(e.target.value as 'all' | 'NSE' | 'BSE')}
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <div className="flex gap-3">
+              {/* Exchange Filter */}
+              <select
+                value={exchangeFilter}
+                onChange={(e) => setExchangeFilter(e.target.value as 'all' | 'NSE' | 'BSE')}
               className="px-3 py-2 text-sm text-neutral-700 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-            >
+              >
               <option value="all" className="text-neutral-700">All Exchanges</option>
               <option value="NSE" className="text-neutral-700">NSE</option>
               <option value="BSE" className="text-neutral-700">BSE</option>
-            </select>
+              </select>
 
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | Trade['status'])}
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | Trade['status'])}
               className="px-3 py-2 text-sm text-neutral-700 bg-white border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-            >
+              >
               <option value="all" className="text-neutral-700">All Status</option>
               <option value="pending" className="text-neutral-700">Pending</option>
               <option value="executed" className="text-neutral-700">Executed</option>
               <option value="completed" className="text-neutral-700">Completed</option>
               <option value="failed" className="text-neutral-700">Failed</option>
               <option value="cancelled" className="text-neutral-700">Cancelled</option>
-            </select>
-          </div>
+              </select>
+            </div>
           <div className="flex-1 min-w-64 ml-auto">
             <SearchBar
               value={searchQuery}
@@ -150,22 +150,22 @@ export default function TradeHistoryPage() {
               className="w-full"
             />
           </div>
-        </div>
+          </div>
 
         <div className="text-sm text-neutral-500 mb-4">
-          Showing {filteredTrades.length} of {trades.length} trades
-        </div>
+            Showing {filteredTrades.length} of {trades.length} trades
+          </div>
 
         {/* Trades Table */}
         {filteredTrades.length === 0 ? (
-          <EmptyState
-            title="No trades found"
-            description={
-              searchQuery || exchangeFilter !== 'all' || statusFilter !== 'all'
-                ? 'Try adjusting your filters'
-                : 'No trade history available'
-            }
-          />
+            <EmptyState
+              title="No trades found"
+              description={
+                searchQuery || exchangeFilter !== 'all' || statusFilter !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'No trade history available'
+              }
+            />
         ) : (
           <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
             <TradeListHeader />

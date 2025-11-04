@@ -555,66 +555,69 @@ export default function StudentStatsPage() {
             </Card>
           </div>
 
-          {/* Win Rate Donut Chart */}
-          {winRateData.length > 0 && (
-            <div>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-4">Win Rate Visualization</h3>
-              <Card padding="lg" className="border border-neutral-200 bg-white">
-                <div className="relative">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={winRateData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={80}
-                        outerRadius={120}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {winRateData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <RechartsTooltip content={<WinRateTooltip />} />
-                      <Legend
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: 12 }}
-                        formatter={(value) => <span className="text-neutral-500 capitalize">{value}</span>}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="text-center">
-                      <p className="text-3xl font-semibold text-neutral-900">{stats.winRate}%</p>
-                      <p className="text-xs uppercase tracking-wide text-neutral-500">Win Rate</p>
+          {/* Win Rate Visualization and Trade Breakdown */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Win Rate Donut Chart */}
+            {winRateData.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-4">Win Rate Visualization</h3>
+                <Card padding="lg" className="border border-neutral-200 bg-white">
+                  <div className="relative">
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={winRateData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={80}
+                          outerRadius={120}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {winRateData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip content={<WinRateTooltip />} />
+                        <Legend
+                          iconType="circle"
+                          wrapperStyle={{ fontSize: 12 }}
+                          formatter={(value) => <span className="text-neutral-500 capitalize">{value}</span>}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="text-center">
+                        <p className="text-3xl font-semibold text-neutral-900">{stats.winRate}%</p>
+                        <p className="text-xs uppercase tracking-wide text-neutral-500">Win Rate</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            </div>
-          )}
+                </Card>
+              </div>
+            )}
 
-          {/* Trade Breakdown */}
-          <div>
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Trade Breakdown</h3>
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card padding="lg">
-                <p className="text-3xl font-semibold text-neutral-900 mb-1">{stats.totalBuyTrades}</p>
-                <p className="text-xs uppercase tracking-wide text-neutral-500">Buy Trades</p>
-              </Card>
-              <Card padding="lg">
-                <p className="text-3xl font-semibold text-neutral-900 mb-1">{stats.totalSellTrades}</p>
-                <p className="text-xs uppercase tracking-wide text-neutral-500">Sell Trades</p>
-              </Card>
-              <Card padding="lg">
-                <p className="text-3xl font-semibold text-neutral-900 mb-1">{formatCurrency(stats.totalBuyValue)}</p>
-                <p className="text-xs uppercase tracking-wide text-neutral-500">Total Buy Value</p>
-              </Card>
-              <Card padding="lg">
-                <p className="text-3xl font-semibold text-neutral-900 mb-1">{formatCurrency(stats.totalSellValue)}</p>
-                <p className="text-xs uppercase tracking-wide text-neutral-500">Total Sell Value</p>
-              </Card>
+            {/* Trade Breakdown */}
+            <div>
+              <h3 className="text-lg font-semibold text-neutral-900 mb-4">Trade Breakdown</h3>
+              <div className="grid gap-4 grid-cols-2">
+                <Card padding="lg">
+                  <p className="text-3xl font-semibold text-neutral-900 mb-1">{stats.totalBuyTrades}</p>
+                  <p className="text-xs uppercase tracking-wide text-neutral-500">Buy Trades</p>
+                </Card>
+                <Card padding="lg">
+                  <p className="text-3xl font-semibold text-neutral-900 mb-1">{stats.totalSellTrades}</p>
+                  <p className="text-xs uppercase tracking-wide text-neutral-500">Sell Trades</p>
+                </Card>
+                <Card padding="lg">
+                  <p className="text-3xl font-semibold text-neutral-900 mb-1">{formatCurrency(stats.totalBuyValue)}</p>
+                  <p className="text-xs uppercase tracking-wide text-neutral-500">Total Buy Value</p>
+                </Card>
+                <Card padding="lg">
+                  <p className="text-3xl font-semibold text-neutral-900 mb-1">{formatCurrency(stats.totalSellValue)}</p>
+                  <p className="text-xs uppercase tracking-wide text-neutral-500">Total Sell Value</p>
+                </Card>
+              </div>
             </div>
           </div>
 

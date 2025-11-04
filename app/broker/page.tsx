@@ -175,24 +175,24 @@ export default function BrokerPage() {
               title="Broker Configuration"
               rightContent={
                 connectionStatus && (
-                  <div className="flex items-center gap-2">
-                    {connectionStatus === 'connected' ? (
-                      <>
-                        <CheckCircleIcon className="h-5 w-5 text-success-600" />
-                        <span className="text-sm font-medium text-success-700">Connected</span>
-                      </>
-                    ) : connectionStatus === 'testing' ? (
-                      <>
-                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
-                        <span className="text-sm font-medium text-neutral-700">Testing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircleIcon className="h-5 w-5 text-danger-600" />
-                        <span className="text-sm font-medium text-danger-700">Disconnected</span>
-                      </>
-                    )}
-                  </div>
+              <div className="flex items-center gap-2">
+                {connectionStatus === 'connected' ? (
+                  <>
+                    <CheckCircleIcon className="h-5 w-5 text-success-600" />
+                    <span className="text-sm font-medium text-success-700">Connected</span>
+                  </>
+                ) : connectionStatus === 'testing' ? (
+                  <>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-600 border-t-transparent" />
+                    <span className="text-sm font-medium text-neutral-700">Testing...</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircleIcon className="h-5 w-5 text-danger-600" />
+                    <span className="text-sm font-medium text-danger-700">Disconnected</span>
+                  </>
+                )}
+              </div>
                 )
               }
             />
@@ -200,38 +200,38 @@ export default function BrokerPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6 mt-6">
             <div className="grid gap-4 md:grid-cols-4">
-              {/* Broker Provider */}
-              <div>
+            {/* Broker Provider */}
+            <div>
                 <div className="mb-1.5">
                   <label className="block text-sm font-medium text-neutral-700">
                     Broker Provider <span className="text-danger-500">*</span>
-                  </label>
+              </label>
                 </div>
-                <select
-                  value={formData.brokerProvider}
-                  onChange={(e) => handleChange('brokerProvider', e.target.value)}
-                  className={cn(
-                    'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-offset-0',
-                    errors.brokerProvider
-                      ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
-                      : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
-                  )}
-                  required
-                >
-                  <option value="" className="text-neutral-700">Select broker provider</option>
-                  {BROKER_PROVIDERS.map((provider) => (
-                    <option key={provider} value={provider} className="text-neutral-700">
-                      {provider}
-                    </option>
-                  ))}
-                </select>
-                {errors.brokerProvider && (
-                  <p className="mt-1.5 text-sm text-danger-600">{errors.brokerProvider}</p>
+              <select
+                value={formData.brokerProvider}
+                onChange={(e) => handleChange('brokerProvider', e.target.value)}
+                className={cn(
+                  'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-0',
+                  errors.brokerProvider
+                    ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
+                    : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
                 )}
-              </div>
+                required
+              >
+                  <option value="" className="text-neutral-700">Select broker provider</option>
+                {BROKER_PROVIDERS.map((provider) => (
+                    <option key={provider} value={provider} className="text-neutral-700">
+                    {provider}
+                  </option>
+                ))}
+              </select>
+              {errors.brokerProvider && (
+                <p className="mt-1.5 text-sm text-danger-600">{errors.brokerProvider}</p>
+              )}
+            </div>
 
-              {/* API Key */}
+            {/* API Key */}
               <div>
                 <div className="mb-1.5">
                   <label className="block text-sm font-medium text-neutral-700">
@@ -239,10 +239,10 @@ export default function BrokerPage() {
                   </label>
                 </div>
                 <input
-                  type="text"
-                  value={formData.apiKey}
-                  onChange={(e) => handleChange('apiKey', e.target.value)}
-                  placeholder="Enter your API key"
+              type="text"
+              value={formData.apiKey}
+              onChange={(e) => handleChange('apiKey', e.target.value)}
+              placeholder="Enter your API key"
                   className={cn(
                     'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
                     'focus:outline-none focus:ring-2 focus:ring-offset-0',
@@ -250,14 +250,14 @@ export default function BrokerPage() {
                       ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
                       : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
                   )}
-                  required
-                />
+              required
+            />
                 {errors.apiKey && (
                   <p className="mt-1.5 text-sm text-danger-600">{errors.apiKey}</p>
                 )}
               </div>
 
-              {/* API Secret */}
+            {/* API Secret */}
               <div>
                 <div className="mb-1.5">
                   <label className="block text-sm font-medium text-neutral-700">
@@ -265,10 +265,10 @@ export default function BrokerPage() {
                   </label>
                 </div>
                 <input
-                  type="password"
-                  value={formData.apiSecret}
-                  onChange={(e) => handleChange('apiSecret', e.target.value)}
-                  placeholder="Enter your API secret"
+              type="password"
+              value={formData.apiSecret}
+              onChange={(e) => handleChange('apiSecret', e.target.value)}
+              placeholder="Enter your API secret"
                   className={cn(
                     'w-full px-3 py-2 text-neutral-700 bg-white border rounded-lg transition-colors',
                     'focus:outline-none focus:ring-2 focus:ring-offset-0',
@@ -276,14 +276,14 @@ export default function BrokerPage() {
                       ? 'border-danger-300 focus:ring-danger-500 focus:border-danger-500'
                       : 'border-neutral-300 focus:ring-primary-600 focus:border-primary-600'
                   )}
-                  required
-                />
+              required
+            />
                 {errors.apiSecret && (
                   <p className="mt-1.5 text-sm text-danger-600">{errors.apiSecret}</p>
                 )}
               </div>
 
-              {/* Access Token (Optional) */}
+            {/* Access Token (Optional) */}
               <div>
                 <div className="mb-1.5">
                   <label className="block text-sm font-medium text-neutral-700">
@@ -291,12 +291,12 @@ export default function BrokerPage() {
                   </label>
                 </div>
                 <input
-                  type="text"
-                  value={formData.accessToken}
-                  onChange={(e) => handleChange('accessToken', e.target.value)}
-                  placeholder="OAuth access token (if applicable)"
+              type="text"
+              value={formData.accessToken}
+              onChange={(e) => handleChange('accessToken', e.target.value)}
+              placeholder="OAuth access token (if applicable)"
                   className="w-full px-3 py-2 text-neutral-700 bg-white border border-neutral-300 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-primary-600 focus:border-primary-600"
-                />
+            />
                 <p className="mt-1.5 text-xs text-neutral-500">Required for OAuth-based broker connections</p>
               </div>
             </div>

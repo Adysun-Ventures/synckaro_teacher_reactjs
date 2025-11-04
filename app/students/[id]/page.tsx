@@ -151,47 +151,47 @@ export default function StudentProfilePage() {
                     <ChartBarIcon className="h-4 w-4" />
                     Stats
                   </button>
-                  <button
-                    type="button"
+          <button
+            type="button"
                     onClick={() => router.push(`/students/${studentId}/logs`)}
                     className="inline-flex items-center gap-2 rounded-lg border border-primary-300 bg-primary-50 px-3 py-1.5 text-sm font-medium text-primary-700 transition-colors hover:bg-primary-100 hover:border-primary-400"
-                  >
+          >
                     <DocumentTextIcon className="h-4 w-4" />
                     Logs
-                  </button>
-                </div>
+          </button>
+        </div>
               }
             />
 
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-4">
-                <Avatar name={student.name} size="2xl" showStatus statusColor={student.status === 'active' ? 'success' : 'danger'} />
-                <div>
-                  <div className="mb-2 flex items-center gap-3">
+            <div className="flex items-start gap-4">
+              <Avatar name={student.name} size="2xl" showStatus statusColor={student.status === 'active' ? 'success' : 'danger'} />
+              <div>
+                <div className="mb-2 flex items-center gap-3">
                     <h1 className="text-3xl font-bold text-neutral-900">{student.name}</h1>
                     <StatusBadge status={student.status} />
-                  </div>
+                </div>
                   <div className="flex flex-wrap items-center gap-4 text-neutral-600">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                       <EnvelopeIcon className="h-4 w-4 text-neutral-500" />
-                      <span>{student.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                    <span>{student.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                       <DevicePhoneMobileIcon className="h-4 w-4 text-neutral-500" />
-                      <span>{student.mobile}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                    <span>{student.mobile}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
                       <ChartBarIcon className="h-4 w-4 text-neutral-500" />
-                      <span>Joined {formatDate(student.joinedDate)}</span>
-                    </div>
+                    <span>Joined {formatDate(student.joinedDate)}</span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex flex-col items-start gap-2 md:items-end">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col items-start gap-2 md:items-end">
+              <div className="flex items-center gap-3">
                   <span className="text-sm font-medium text-neutral-700">Status</span>
-                  <Toggle enabled={student.status === 'active'} onChange={handleStatusToggle} />
+                <Toggle enabled={student.status === 'active'} onChange={handleStatusToggle} />
                 </div>
               </div>
             </div>
