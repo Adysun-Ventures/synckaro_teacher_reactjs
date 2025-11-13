@@ -1,10 +1,16 @@
 import { storage } from '@/lib/storage';
 import { Trade, Student } from '@/types';
 import { getCurrentUser } from './authService';
+// import apiClient from '@/lib/api'; // TODO: Uncomment when integrating with API
 
 /**
  * Trade Service for SyncKaro Teacher
  * Handles trade operations including panic button functionality
+ * 
+ * TODO: API Integration
+ * - Replace closeAllTrades with API call to /teacher/trade/close-all
+ * - Add API calls for trade creation, updates, and history
+ * - Add real-time trade status updates
  */
 
 /**
@@ -13,6 +19,12 @@ import { getCurrentUser } from './authService';
  * @returns Number of trades closed
  */
 export function closeAllTrades(teacherId: string): number {
+  // TODO: API Integration - Replace with actual API call
+  // const response = await apiClient.post<{ closedCount: number }>(
+  //   '/teacher/trade/close-all',
+  //   { teacherId }
+  // );
+  
   const allTrades = (storage.getItem('trades') || []) as Trade[];
   const allStudents = (storage.getItem('students') || []) as Student[];
 

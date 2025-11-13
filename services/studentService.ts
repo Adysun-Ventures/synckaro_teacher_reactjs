@@ -1,10 +1,20 @@
 import { storage } from '@/lib/storage';
 import { Student, BrokerConfig } from '@/types';
+// import apiClient from '@/lib/api'; // TODO: Uncomment when integrating with API
 
 /**
  * Student Service for SyncKaro Teacher
  * Handles CRUD operations for students with localStorage
  * All operations are teacher-scoped (only access teacher's students)
+ * 
+ * TODO: API Integration
+ * - Replace getStudents with API call to /teacher/student/list
+ * - Replace getStudent with API call to /teacher/student/view
+ * - Replace createStudent with API call to /teacher/student/create
+ * - Replace updateStudent with API call to /teacher/student/update
+ * - Replace deleteStudent with API call to /teacher/student/delete
+ * - Replace bulkCreateStudents with API call to /teacher/student/bulk-create
+ * - Add error handling and fallback to localStorage
  */
 
 /**
@@ -20,6 +30,12 @@ function generateId(): string {
  * @returns Array of students
  */
 export function getStudents(teacherId: string): Student[] {
+  // TODO: API Integration - Replace with actual API call
+  // const response = await apiClient.post<Student[]>(
+  //   '/teacher/student/list',
+  //   { teacherId }
+  // );
+  
   const allStudents = (storage.getItem('students') || []) as Student[];
   return allStudents.filter((s) => s.teacherId === teacherId);
 }
@@ -42,6 +58,12 @@ export function getStudent(id: string, teacherId: string): Student | null {
  * @returns Created student
  */
 export function createStudent(data: Omit<Student, 'id' | 'joinedDate'> & { teacherId: string }): Student {
+  // TODO: API Integration - Replace with actual API call
+  // const response = await apiClient.post<Student>(
+  //   '/teacher/student/create',
+  //   data
+  // );
+  
   const allStudents = (storage.getItem('students') || []) as Student[];
   
   const newStudent: Student = {
@@ -103,6 +125,12 @@ export function updateStudent(
  * @returns true if deleted, false if not found
  */
 export function deleteStudent(id: string, teacherId: string): boolean {
+  // TODO: API Integration - Replace with actual API call
+  // const response = await apiClient.delete(
+  //   '/teacher/student/delete',
+  //   { data: { id, teacherId } }
+  // );
+  
   const allStudents = (storage.getItem('students') || []) as Student[];
   const filtered = allStudents.filter((s) => !(s.id === id && s.teacherId === teacherId));
 

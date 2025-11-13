@@ -1,9 +1,15 @@
 import { storage } from '@/lib/storage';
 import { AuthData, OTPVerifyData } from '@/types';
+// import apiClient from '@/lib/api'; // TODO: Uncomment when integrating with API
 
 /**
  * Authentication Service for SyncKaro Teacher
  * Handles mobile + OTP authentication with localStorage
+ * 
+ * TODO: API Integration
+ * - Replace dummy login with API call to /common/login
+ * - Replace dummy verify with API call to /common/verify
+ * - Update sendOTP, verifyOTP, and resendOTP functions
  */
 
 // Dummy teacher credentials (for development/testing)
@@ -46,6 +52,18 @@ function isValidMobile(mobile: string): boolean {
  * @returns Promise with success status
  */
 export async function sendOTP(mobile: string): Promise<{ success: boolean; error?: string }> {
+  // TODO: API Integration - Replace with actual API call
+  // const response = await apiClient.post<{ message: string; otp: string }>(
+  //   '/common/login',
+  //   {
+  //     mobile,
+  //     role: 'teacher',
+  //   },
+  //   {
+  //     skipAuth: true, // Skip auth token for login endpoint
+  //   }
+  // );
+  
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -68,6 +86,23 @@ export async function sendOTP(mobile: string): Promise<{ success: boolean; error
  * @returns Promise with auth data or error
  */
 export async function verifyOTP(data: OTPVerifyData): Promise<{ success: boolean; error?: string; data?: AuthData }> {
+  // TODO: API Integration - Replace with actual API call
+  // const response = await apiClient.post<{
+  //   access_token: string;
+  //   token_type: string;
+  //   id: number;
+  //   role: string;
+  // }>(
+  //   '/common/verify',
+  //   {
+  //     mobile: data.mobile,
+  //     otp: data.otp,
+  //   },
+  //   {
+  //     skipAuth: true, // Skip auth token for verify endpoint
+  //   }
+  // );
+  
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 800));
 
