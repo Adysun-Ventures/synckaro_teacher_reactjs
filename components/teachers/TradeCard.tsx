@@ -5,13 +5,20 @@ interface TradeCardProps {
   trade: Trade;
 }
 
+// Define statusColors with `as const` so keys are literal types
+const statusColors = {
+  pending: 'bg-warning-100 text-warning-700',
+  executed: 'bg-success-100 text-success-700',
+  completed: 'bg-success-100 text-success-700',
+  failed: 'bg-danger-100 text-danger-700',
+  cancelled: 'bg-danger-100 text-danger-700',
+} as const;
+
+// Derive a Status type from the keys of statusColors
+type Status = keyof typeof statusColors;
+
 export function TradeCard({ trade }: TradeCardProps) {
   const isBuy = trade.type === 'BUY';
-  const statusColors = {
-    pending: 'bg-warning-100 text-warning-700',
-    executed: 'bg-success-100 text-success-700',
-    failed: 'bg-danger-100 text-danger-700',
-  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-IN', {
@@ -52,7 +59,7 @@ export function TradeCard({ trade }: TradeCardProps) {
         <span
           className={cn(
             'px-2.5 py-1 rounded-md text-xs font-medium',
-            statusColors[trade.status]
+            statusColors[trade.status as Status]
           )}
         >
           {trade.status}
