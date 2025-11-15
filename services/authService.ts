@@ -1,6 +1,7 @@
 import { storage } from '@/lib/storage';
 import { AuthData, OTPVerifyData } from '@/types';
 import apiClient from '@/lib/api';
+import type { CustomAxiosRequestConfig } from '@/lib/api';
 
 /**
  * Authentication Service for SyncKaro Teacher
@@ -35,15 +36,16 @@ export async function sendOTP(mobile: string): Promise<{ success: boolean; error
 
   try {
     // Call the login API endpoint
+    const config: CustomAxiosRequestConfig = {
+      skipAuth: true, // Skip auth token for login endpoint
+    };
     const response = await apiClient.post<{ message: string; otp: string }>(
       '/common/login',
       {
         mobile,
         role: 'teacher',
       },
-      {
-        skipAuth: true, // Skip auth token for login endpoint
-      }
+      config
     );
 
     // API returns { message: string, otp: string }
@@ -78,6 +80,9 @@ export async function verifyOTP(data: OTPVerifyData): Promise<{ success: boolean
 
   try {
     // Call the verify API endpoint
+    const config: CustomAxiosRequestConfig = {
+      skipAuth: true, // Skip auth token for verify endpoint
+    };
     const response = await apiClient.post<{
       access_token: string;
       token_type: string;
@@ -89,9 +94,7 @@ export async function verifyOTP(data: OTPVerifyData): Promise<{ success: boolean
         mobile,
         otp,
       },
-      {
-        skipAuth: true, // Skip auth token for verify endpoint
-      }
+      config
     );
 
     // Map API response to AuthData structure

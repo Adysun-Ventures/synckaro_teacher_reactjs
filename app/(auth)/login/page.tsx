@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { Logo } from '@/components/layout/Logo';
@@ -11,7 +11,7 @@ import { sendOTP, verifyOTP, isAuthenticated } from '@/services/authService';
 
 type Step = 'mobile' | 'otp';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>('mobile');
@@ -217,6 +217,25 @@ export default function LoginPage() {
         © 2025 SyncKaro. Copy Trading Platform.
       </p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="flex justify-center mb-4">
+            <Logo />
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-neutral-500">Loading...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
 
