@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   UserGroupIcon,
@@ -14,8 +14,7 @@ import {
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
 import { isAuthenticated, getCurrentUser } from '@/services/authService';
-import { storage } from '@/lib/storage';
-import { Student, Trade } from '@/types';
+// import apiClient from '@/lib/api'; // TODO: Uncomment when integrating with API
 import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
@@ -32,31 +31,22 @@ export default function DashboardPage() {
     return null;
   }
 
-  const teacherId = user?.id || '';
-
-  // Load teacher's students and trades
-  const allStudents = (storage.getItem('students') || []) as Student[];
-  const allTrades = (storage.getItem('trades') || []) as Trade[];
-
-  // Filter by teacher ID
-  const students = useMemo(() => {
-    return allStudents.filter((s) => s.teacherId === teacherId);
-  }, [allStudents, teacherId]);
-
-  const trades = useMemo(() => {
-    return allTrades.filter((t) => t.teacherId === teacherId);
-  }, [allTrades, teacherId]);
-
-  // Calculate stats
-  const totalStudents = students.length;
-  const activeStudents = students.filter((s) => s.status === 'active').length;
-  const totalTrades = trades.length;
-  const totalCapital = useMemo(() => {
-    return students.reduce((sum, s) => sum + (s.currentCapital || s.initialCapital || 0), 0);
-  }, [students]);
-  const totalPnL = useMemo(() => {
-    return trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-  }, [trades]);
+  // TODO: Replace hardcoded data with API calls
+  // Example: const response = await apiClient.get('/teacher/dashboard/stats');
+  
+  // Hardcoded dashboard data - Replace with API response
+  const totalStudents = 25;
+  const activeStudents = 18;
+  const totalTrades = 342;
+  const totalCapital = 2500000; // ₹25 Lakhs
+  const totalPnL = 125000; // ₹1.25 Lakhs profit
+  const wins = 198;
+  const winRate = 58; // 58% win rate
+  const todayTradesCount = 12;
+  const todayPnL = 8500; // ₹8,500 profit today
+  const pnl7d = 45000; // ₹45,000 profit in last 7 days
+  const dailyVolume = 1250000; // ₹12.5 Lakhs
+  const pendingOrders = 3;
 
   const formatCurrency = (value: number, fractionDigits = 2) => {
     return new Intl.NumberFormat('en-IN', {
@@ -75,7 +65,7 @@ export default function DashboardPage() {
     {
       name: 'Total Students',
       value: formatNumber(totalStudents),
-      change: totalStudents > 0 ? Math.round((activeStudents / totalStudents) * 100) : 0,
+      change: Math.round((activeStudents / totalStudents) * 100), // 72% active
       icon: UserGroupIcon,
       bgColor: 'bg-success-100',
       iconColor: 'text-success-600',
@@ -83,7 +73,7 @@ export default function DashboardPage() {
     {
       name: 'Total Trades',
       value: formatNumber(totalTrades),
-      change: totalTrades > 0 ? 5 : 0, // Placeholder
+      change: 5, // +5% from last period
       icon: ChartBarIcon,
       bgColor: 'bg-primary-100',
       iconColor: 'text-primary-600',
@@ -91,7 +81,7 @@ export default function DashboardPage() {
     {
       name: 'Total Capital',
       value: formatCurrency(totalCapital, 0),
-      change: totalCapital > 0 ? 8 : 0, // Placeholder
+      change: 8, // +8% growth
       icon: BanknotesIcon,
       bgColor: 'bg-warning-100',
       iconColor: 'text-warning-600',
@@ -99,58 +89,12 @@ export default function DashboardPage() {
     {
       name: 'Net P&L',
       value: formatCurrency(totalPnL),
-      change: totalPnL >= 0 ? 12 : -3,
+      change: 12, // +12% profit
       icon: BanknotesIcon,
       bgColor: totalPnL >= 0 ? 'bg-success-100' : 'bg-danger-100',
       iconColor: totalPnL >= 0 ? 'text-success-600' : 'text-danger-600',
     },
   ];
-
-  // Get recent trades for teacher
-  const recentTrades = useMemo(() => {
-    return trades
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5)
-      .map((trade) => ({
-        action: trade.type === 'BUY' ? 'Executed buy order' : 'Executed sell order',
-        symbol: trade.stock,
-        exchange: trade.exchange,
-        side: trade.type,
-        quantity: trade.quantity,
-        avgPrice: trade.price || 0,
-        pnl: trade.pnl || 0,
-        time: getRelativeTime(trade.createdAt),
-      }));
-  }, [trades]);
-
-  function getRelativeTime(dateString: string): string {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  }
-
-  // Calculate win rate
-  const wins = trades.filter((t) => (t.pnl || 0) > 0).length;
-  const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
-
-  const todayTrades = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return trades.filter((t) => new Date(t.createdAt) >= today);
-  }, [trades]);
-
-  const todayPnL = useMemo(() => {
-    return todayTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-  }, [todayTrades]);
 
   const insightCards = [
     {
@@ -171,7 +115,7 @@ export default function DashboardPage() {
     },
     {
       title: 'Net P&L (Today)',
-      description: `Across ${todayTrades.length} trades`,
+      description: `Across ${todayTradesCount} trades`,
       value: formatCurrency(todayPnL),
       meta: todayPnL >= 0 ? 'Profit today' : 'Loss today',
       tone: todayPnL >= 0 ? ('success' as const) : ('warning' as const),
@@ -179,80 +123,65 @@ export default function DashboardPage() {
     },
   ];
 
-  // Calculate 7-day P&L
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentTrades7d = useMemo(() => {
-    return trades.filter((t) => new Date(t.createdAt) >= sevenDaysAgo);
-  }, [trades, sevenDaysAgo]);
-  const pnl7d = useMemo(() => {
-    return recentTrades7d.reduce((sum, t) => sum + (t.pnl || 0), 0);
-  }, [recentTrades7d]);
-
-  // Calculate daily volume (sum of trade values)
-  const dailyVolume = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTrades = trades.filter((t) => new Date(t.createdAt) >= today);
-    return todayTrades.reduce((sum, t) => sum + ((t.price || 0) * t.quantity), 0);
-  }, [trades]);
-
-  // Calculate pending orders
-  const pendingOrders = trades.filter((t) => t.status === 'pending').length;
-
+  // Hardcoded report highlights - Replace with API response
   const reportHighlights = [
     {
       label: 'Daily Volume',
       value: formatCurrency(dailyVolume, 0),
-      delta: dailyVolume > 0 ? '+4.3%' : '0%',
-      positive: dailyVolume > 0,
+      delta: '+4.3%',
+      positive: true,
     },
     {
       label: 'Net P&L (7d)',
       value: formatCurrency(pnl7d),
-      delta: pnl7d >= 0 ? '+1.8%' : '-1.2%',
-      positive: pnl7d >= 0,
+      delta: '+1.8%',
+      positive: true,
     },
     {
       label: 'Total Capital',
       value: formatCurrency(totalCapital, 0),
-      delta: totalCapital > 0 ? '+2.1%' : '0%',
-      positive: totalCapital > 0,
+      delta: '+2.1%',
+      positive: true,
     },
     {
       label: 'Orders Pending',
       value: formatNumber(pendingOrders),
-      delta: pendingOrders > 0 ? `+${pendingOrders}` : '0',
+      delta: `+${pendingOrders}`,
       positive: false,
     },
   ];
 
-  // Group trades by stock/strategy (simplified)
-  const reportBreakdown = useMemo(() => {
-    const stockGroups: Record<string, { trades: Trade[] }> = {};
-    trades.forEach((trade) => {
-      if (!stockGroups[trade.stock]) {
-        stockGroups[trade.stock] = { trades: [] };
-      }
-      stockGroups[trade.stock].trades.push(trade);
-    });
-
-    return Object.entries(stockGroups)
-      .slice(0, 4)
-      .map(([stock, group]) => {
-        const stockTrades = group.trades;
-        const wins = stockTrades.filter((t) => (t.pnl || 0) > 0).length;
-        const winRate = stockTrades.length > 0 ? Math.round((wins / stockTrades.length) * 100) : 0;
-        const pnl = stockTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-        return {
-          segment: stock,
-          trades: stockTrades.length,
-          winRate: `${winRate}%`,
-          pnl: formatCurrency(pnl),
-          positive: pnl >= 0,
-        };
-      });
-  }, [trades]);
+  // Hardcoded report breakdown by stock/strategy - Replace with API response
+  const reportBreakdown = [
+    {
+      segment: 'RELIANCE',
+      trades: 45,
+      winRate: '62%',
+      pnl: formatCurrency(25000),
+      positive: true,
+    },
+    {
+      segment: 'TCS',
+      trades: 38,
+      winRate: '55%',
+      pnl: formatCurrency(18000),
+      positive: true,
+    },
+    {
+      segment: 'INFY',
+      trades: 32,
+      winRate: '68%',
+      pnl: formatCurrency(22000),
+      positive: true,
+    },
+    {
+      segment: 'HDFC',
+      trades: 28,
+      winRate: '50%',
+      pnl: formatCurrency(-5000),
+      positive: false,
+    },
+  ];
 
   return (
     <DashboardLayout title="Dashboard">
