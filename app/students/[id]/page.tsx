@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef, type ChangeEvent } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -22,10 +22,36 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { PaginationFooter } from '@/components/common/PaginationFooter';
 import { TradeListHeader } from '@/components/teachers/TradeListHeader';
 import { CompactTradeRow } from '@/components/teachers/CompactTradeRow';
-import { storage } from '@/lib/storage';
 import { cn } from '@/lib/utils';
-import { isAuthenticated } from '@/services/authService';
+import { isAuthenticated, getCurrentUser } from '@/services/authService';
 import { Student, Trade } from '@/types';
+import apiClient from '@/lib/api';
+
+interface StudentDetailApiResponse {
+  id: number;
+  name: string;
+  status: 'active' | 'inactive';
+  email: string;
+  phone: string;
+  joined_on: string | null;
+  initial_capital: number;
+  current_capital: number;
+  pnl: number;
+  pnl_formatted: string;
+  strategy: string;
+  recent_trades_count: number;
+  recent_trades: Array<{
+    stock: string;
+    type: 'BUY' | 'SELL';
+    qty: number;
+    price: number;
+    price_formatted: string;
+    exchange: 'NSE' | 'BSE';
+    status: string;
+    date: string;
+  }>;
+  last_updated: string;
+}
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -49,11 +75,18 @@ export default function StudentProfilePage() {
   const router = useRouter();
   const params = useParams();
   const studentId = params.id as string;
+  const user = getCurrentUser();
+  const teacherIdNum = user?.id ? parseInt(user.id, 10) : null;
+  const studentIdNum = parseInt(studentId, 10);
 
   const [student, setStudent] = useState<Student | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pnlFormatted, setPnlFormatted] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -61,49 +94,112 @@ export default function StudentProfilePage() {
     }
   }, [router]);
 
-  useEffect(() => {
-    const students = storage.getItem('students') || [];
-    const foundStudent = students.find((s: Student) => s.id === studentId);
-
-    if (!foundStudent) {
-      router.push('/students');
+  // Fetch student details from API
+  const fetchStudentData = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (hasFetchedRef.current) {
       return;
     }
 
-    setStudent(foundStudent);
+    if (!teacherIdNum || isNaN(teacherIdNum) || isNaN(studentIdNum)) {
+      setError('Invalid teacher or student ID');
+      setLoading(false);
+      return;
+    }
 
-    const allTrades = storage.getItem('trades') || [];
-    const studentTrades = allTrades
-      .filter((trade: Trade) => trade.studentId === studentId)
-      .sort((a: Trade, b: Trade) => {
-        const dateA = new Date(a.timestamp || a.createdAt).getTime();
-        const dateB = new Date(b.timestamp || b.createdAt).getTime();
-        return dateB - dateA;
+    try {
+      hasFetchedRef.current = true;
+      setLoading(true);
+      setError(null);
+
+      const response = await apiClient.post<{
+        success: boolean;
+        data: StudentDetailApiResponse;
+      }>('/teacher/view_student', {
+        teacher_id: teacherIdNum,
+        student_id: studentIdNum,
       });
 
-    setTrades(studentTrades);
-    setCurrentPage(1);
-  }, [studentId, router]);
+      if (response.data && response.data.success && response.data.data) {
+        const apiData = response.data.data;
+
+        // Map API response to Student type
+        const mappedStudent: Student = {
+          id: String(apiData.id),
+          name: apiData.name,
+          email: apiData.email,
+          mobile: apiData.phone,
+          teacherId: user?.id || '',
+          status: apiData.status,
+          initialCapital: apiData.initial_capital,
+          currentCapital: apiData.current_capital,
+          profitLoss: apiData.pnl,
+          riskPercentage: 10, // Not provided by API
+          strategy: apiData.strategy || '',
+          joinedDate: apiData.joined_on || apiData.last_updated || new Date().toISOString(),
+        };
+
+        setStudent(mappedStudent);
+        setPnlFormatted(apiData.pnl_formatted);
+
+        // Map recent trades from API
+        const mappedTrades: Trade[] = apiData.recent_trades.map((apiTrade, index) => ({
+          id: `trade-${apiData.id}-${index}`,
+          teacherId: user?.id || '',
+          studentId: String(apiData.id),
+          stock: apiTrade.stock,
+          quantity: apiTrade.qty,
+          price: apiTrade.price,
+          type: apiTrade.type,
+          exchange: apiTrade.exchange,
+          status: apiTrade.status as Trade['status'],
+          createdAt: apiTrade.date,
+          timestamp: apiTrade.date,
+        }));
+
+        setTrades(mappedTrades);
+        setCurrentPage(1);
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (err: any) {
+      console.error('Error fetching student data:', err);
+      setError(err?.error || err?.message || 'Failed to load student data');
+      hasFetchedRef.current = false; // Allow retry on error
+      
+      // Redirect to students list if student not found
+      if (err?.statusCode === 404 || err?.message?.includes('not found')) {
+        router.push('/students');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [teacherIdNum, studentIdNum, user?.id, router]);
+
+  // Load student data on mount
+  useEffect(() => {
+    if (isAuthenticated() && teacherIdNum && !isNaN(studentIdNum)) {
+      fetchStudentData();
+    }
+  }, [teacherIdNum, studentIdNum, fetchStudentData]);
 
   const pnl = useMemo(() => {
     if (!student) return 0;
-    return (student.currentCapital || 0) - (student.initialCapital || 0);
+    // Use profitLoss from API if available, otherwise calculate
+    return student.profitLoss ?? ((student.currentCapital || 0) - (student.initialCapital || 0));
   }, [student]);
 
   const isPositive = pnl >= 0;
 
-  const handleStatusToggle = (enabled: boolean) => {
+  const handleStatusToggle = async (enabled: boolean) => {
     if (!student) return;
 
-    const students = storage.getItem('students') || [];
-    const updatedStudents = students.map((s: Student) =>
-      s.id === student.id ? { ...s, status: enabled ? 'active' : 'inactive' } : s
-    );
-
-    storage.setItem('students', updatedStudents);
-
-    const nextStudent = updatedStudents.find((s: Student) => s.id === student.id) || null;
-    setStudent(nextStudent);
+    // TODO: Implement API call to update student status
+    // For now, just update local state optimistically
+    setStudent({
+      ...student,
+      status: enabled ? 'active' : 'inactive',
+    });
   };
 
   const totalTrades = trades.length;
@@ -129,8 +225,47 @@ export default function StudentProfilePage() {
   }, [currentPage, trades, totalTrades, pageSize]);
 
 
-  if (!student || !isAuthenticated()) {
+  if (!isAuthenticated()) {
     return null;
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout title="Student Profile">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-neutral-500">Loading student data...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error || !student) {
+    return (
+      <DashboardLayout title="Student Profile">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-danger-600 mb-2">{error || 'Failed to load student data'}</p>
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => {
+                  hasFetchedRef.current = false;
+                  fetchStudentData();
+                }}
+                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              >
+                Retry
+              </button>
+              <button
+                onClick={() => router.push('/students')}
+                className="text-neutral-600 hover:text-neutral-700 text-sm font-medium"
+              >
+                Back to Students
+              </button>
+            </div>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -174,11 +309,11 @@ export default function StudentProfilePage() {
                   <div className="flex flex-wrap items-center gap-4 text-neutral-600">
                   <div className="flex items-center gap-2">
                       <EnvelopeIcon className="h-4 w-4 text-neutral-500" />
-                    <span>{student.email}</span>
+                    <span>{student.email || '-'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                       <DevicePhoneMobileIcon className="h-4 w-4 text-neutral-500" />
-                    <span>{student.mobile}</span>
+                    <span>{student.mobile || '-'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                       <ChartBarIcon className="h-4 w-4 text-neutral-500" />
@@ -218,7 +353,7 @@ export default function StudentProfilePage() {
                 isPositive ? 'text-success-600' : 'text-danger-600'
               )}
             >
-              {formatCurrency(pnl)}
+              {pnlFormatted || formatCurrency(pnl)}
             </p>
             <p className="text-xs uppercase tracking-wide text-neutral-500">P&amp;L</p>
           </Card>
