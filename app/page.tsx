@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   UserGroupIcon,
@@ -14,58 +14,175 @@ import {
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/common/Card';
 import { isAuthenticated, getCurrentUser } from '@/services/authService';
-// import apiClient from '@/lib/api'; // TODO: Uncomment when integrating with API
+import apiClient from '@/lib/api';
 import { cn } from '@/lib/utils';
+
+interface DashboardData {
+  summary: {
+    total_students: { count: number; change_percentage: number };
+    total_trades: { count: number; change_percentage: number };
+    total_capital: { amount: string; change_percentage: number };
+    net_pnl: { amount: string; change_percentage: number };
+  };
+  reports_overview: {
+    daily_volume: { amount: string; change_percentage: number };
+    net_pnl_7d: { amount: string; change_percentage: number };
+    total_capital: { amount: string; change_percentage: number };
+    orders_pending: number;
+  };
+  strategy_desk: Array<{
+    strategy: string;
+    trades: number;
+    win_rate: string;
+    net_pnl: string;
+  }>;
+  trading_insights: {
+    win_rate: { percentage: number; details: string };
+    active_students: { count: number; total: number };
+    net_pnl_today: { amount: string; trades: number };
+  };
+  last_updated: string;
+}
 
 export default function DashboardPage() {
   const router = useRouter();
   const user = getCurrentUser();
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
+
+  // Extract teacher ID to avoid dependency on entire user object
+  const teacherId = user?.id ? parseInt(user.id, 10) : null;
+
+  const fetchDashboardData = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (hasFetchedRef.current) {
+      return;
+    }
+
+    try {
+      hasFetchedRef.current = true;
+      setLoading(true);
+      setError(null);
+      
+      if (!teacherId || isNaN(teacherId)) {
+        throw new Error('Invalid teacher ID');
+      }
+
+      const response = await apiClient.post<{ status: boolean; data: DashboardData }>(
+        '/teacher/home',
+        {
+          teacher_id: teacherId,
+        }
+      );
+      
+      if (response.data && response.data.status && response.data.data) {
+        setDashboardData(response.data.data);
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (err: any) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err?.error || err?.message || 'Failed to load dashboard data');
+      hasFetchedRef.current = false; // Allow retry on error
+    } finally {
+      setLoading(false);
+    }
+  }, [teacherId]);
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push('/login');
+      return;
     }
-  }, [router]);
+
+    if (teacherId && !hasFetchedRef.current) {
+      fetchDashboardData();
+    }
+  }, [router, teacherId, fetchDashboardData]);
 
   if (!isAuthenticated()) {
     return null;
   }
 
-  // TODO: Replace hardcoded data with API calls
-  // Example: const response = await apiClient.get('/teacher/dashboard/stats');
-  
-  // Hardcoded dashboard data - Replace with API response
-  const totalStudents = 25;
-  const activeStudents = 18;
-  const totalTrades = 342;
-  const totalCapital = 2500000; // ₹25 Lakhs
-  const totalPnL = 125000; // ₹1.25 Lakhs profit
-  const wins = 198;
-  const winRate = 58; // 58% win rate
-  const todayTradesCount = 12;
-  const todayPnL = 8500; // ₹8,500 profit today
-  const pnl7d = 45000; // ₹45,000 profit in last 7 days
-  const dailyVolume = 1250000; // ₹12.5 Lakhs
-  const pendingOrders = 3;
+  if (loading) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="flex items-center justify-center h-64">
+          <p className="text-neutral-500">Loading dashboard...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const formatCurrency = (value: number, fractionDigits = 2) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: fractionDigits,
-      maximumFractionDigits: fractionDigits,
-    }).format(value);
+  if (error || !dashboardData) {
+    return (
+      <DashboardLayout title="Dashboard">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-danger-600 mb-2">{error || 'Failed to load dashboard data'}</p>
+            <button
+              onClick={() => {
+                hasFetchedRef.current = false;
+                fetchDashboardData();
+              }}
+              className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Helper function to parse currency string to number (for comparison)
+  const parseCurrency = (formattedString: string): number => {
+    return parseFloat(formattedString.replace(/[₹,\s]/g, '')) || 0;
   };
+
+  // Helper function to format last updated time
+  const formatLastUpdated = (isoString: string): string => {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    return date.toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+  };
+
+  // Extract data from API response
+  const totalStudents = dashboardData.summary.total_students.count;
+  const activeStudents = dashboardData.trading_insights.active_students.count;
+  const totalTrades = dashboardData.summary.total_trades.count;
+  const totalCapitalAmount = dashboardData.summary.total_capital.amount;
+  const totalPnLAmount = dashboardData.summary.net_pnl.amount;
+  const winRate = dashboardData.trading_insights.win_rate.percentage;
+  const winRateDetails = dashboardData.trading_insights.win_rate.details;
+  const todayTradesCount = dashboardData.trading_insights.net_pnl_today.trades;
+  const todayPnLAmount = dashboardData.trading_insights.net_pnl_today.amount;
+  const pnl7dAmount = dashboardData.reports_overview.net_pnl_7d.amount;
+  const dailyVolumeAmount = dashboardData.reports_overview.daily_volume.amount;
+  const pendingOrders = dashboardData.reports_overview.orders_pending;
 
   const formatNumber = (value: number) => {
     return new Intl.NumberFormat('en-IN').format(value);
   };
 
+  // Parse P&L to determine if positive
+  const totalPnLValue = parseCurrency(totalPnLAmount);
+  const todayPnLValue = parseCurrency(todayPnLAmount);
+
   const stats = [
     {
       name: 'Total Students',
       value: formatNumber(totalStudents),
-      change: Math.round((activeStudents / totalStudents) * 100), // 72% active
+      change: dashboardData.summary.total_students.change_percentage,
       icon: UserGroupIcon,
       bgColor: 'bg-success-100',
       iconColor: 'text-success-600',
@@ -73,26 +190,26 @@ export default function DashboardPage() {
     {
       name: 'Total Trades',
       value: formatNumber(totalTrades),
-      change: 5, // +5% from last period
+      change: dashboardData.summary.total_trades.change_percentage,
       icon: ChartBarIcon,
       bgColor: 'bg-primary-100',
       iconColor: 'text-primary-600',
     },
     {
       name: 'Total Capital',
-      value: formatCurrency(totalCapital, 0),
-      change: 8, // +8% growth
+      value: totalCapitalAmount,
+      change: dashboardData.summary.total_capital.change_percentage,
       icon: BanknotesIcon,
       bgColor: 'bg-warning-100',
       iconColor: 'text-warning-600',
     },
     {
       name: 'Net P&L',
-      value: formatCurrency(totalPnL),
-      change: 12, // +12% profit
+      value: totalPnLAmount,
+      change: dashboardData.summary.net_pnl.change_percentage,
       icon: BanknotesIcon,
-      bgColor: totalPnL >= 0 ? 'bg-success-100' : 'bg-danger-100',
-      iconColor: totalPnL >= 0 ? 'text-success-600' : 'text-danger-600',
+      bgColor: totalPnLValue >= 0 ? 'bg-success-100' : 'bg-danger-100',
+      iconColor: totalPnLValue >= 0 ? 'text-success-600' : 'text-danger-600',
     },
   ];
 
@@ -101,7 +218,7 @@ export default function DashboardPage() {
       title: 'Win Rate',
       description: 'Across all trades',
       value: `${winRate}%`,
-      meta: `${wins} wins out of ${totalTrades}`,
+      meta: winRateDetails,
       tone: winRate >= 50 ? ('success' as const) : ('warning' as const),
       icon: TrophyIcon,
     },
@@ -116,72 +233,49 @@ export default function DashboardPage() {
     {
       title: 'Net P&L (Today)',
       description: `Across ${todayTradesCount} trades`,
-      value: formatCurrency(todayPnL),
-      meta: todayPnL >= 0 ? 'Profit today' : 'Loss today',
-      tone: todayPnL >= 0 ? ('success' as const) : ('warning' as const),
+      value: todayPnLAmount,
+      meta: todayPnLValue >= 0 ? 'Profit today' : 'Loss today',
+      tone: todayPnLValue >= 0 ? ('success' as const) : ('warning' as const),
       icon: BanknotesIcon,
     },
   ];
 
-  // Hardcoded report highlights - Replace with API response
+  // Report highlights from API
   const reportHighlights = [
     {
       label: 'Daily Volume',
-      value: formatCurrency(dailyVolume, 0),
-      delta: '+4.3%',
-      positive: true,
+      value: dailyVolumeAmount,
+      delta: `${dashboardData.reports_overview.daily_volume.change_percentage >= 0 ? '+' : ''}${dashboardData.reports_overview.daily_volume.change_percentage}%`,
+      positive: dashboardData.reports_overview.daily_volume.change_percentage >= 0,
     },
     {
       label: 'Net P&L (7d)',
-      value: formatCurrency(pnl7d),
-      delta: '+1.8%',
-      positive: true,
+      value: pnl7dAmount,
+      delta: `${dashboardData.reports_overview.net_pnl_7d.change_percentage >= 0 ? '+' : ''}${dashboardData.reports_overview.net_pnl_7d.change_percentage}%`,
+      positive: dashboardData.reports_overview.net_pnl_7d.change_percentage >= 0,
     },
     {
       label: 'Total Capital',
-      value: formatCurrency(totalCapital, 0),
-      delta: '+2.1%',
-      positive: true,
+      value: dashboardData.reports_overview.total_capital.amount,
+      delta: `${dashboardData.reports_overview.total_capital.change_percentage >= 0 ? '+' : ''}${dashboardData.reports_overview.total_capital.change_percentage}%`,
+      positive: dashboardData.reports_overview.total_capital.change_percentage >= 0,
     },
     {
       label: 'Orders Pending',
       value: formatNumber(pendingOrders),
-      delta: `+${pendingOrders}`,
+      delta: pendingOrders > 0 ? `+${pendingOrders}` : '0',
       positive: false,
     },
   ];
 
-  // Hardcoded report breakdown by stock/strategy - Replace with API response
-  const reportBreakdown = [
-    {
-      segment: 'RELIANCE',
-      trades: 45,
-      winRate: '62%',
-      pnl: formatCurrency(25000),
-      positive: true,
-    },
-    {
-      segment: 'TCS',
-      trades: 38,
-      winRate: '55%',
-      pnl: formatCurrency(18000),
-      positive: true,
-    },
-    {
-      segment: 'INFY',
-      trades: 32,
-      winRate: '68%',
-      pnl: formatCurrency(22000),
-      positive: true,
-    },
-    {
-      segment: 'HDFC',
-      trades: 28,
-      winRate: '50%',
-      pnl: formatCurrency(-5000),
-      positive: false,
-    },
-  ];
+  // Report breakdown from API (strategy_desk)
+  const reportBreakdown = dashboardData.strategy_desk.map((item) => ({
+    segment: item.strategy,
+    trades: item.trades,
+    winRate: item.win_rate,
+    pnl: item.net_pnl,
+    positive: !item.net_pnl.startsWith('-'),
+  }));
 
   return (
     <DashboardLayout title="Dashboard">
@@ -233,10 +327,12 @@ export default function DashboardPage() {
           header={
             <div>
               <h3 className="text-lg font-semibold text-neutral-900">Reports Overview</h3>
-              <p className="text-xs font-medium text-neutral-500">Updated 5 minutes ago</p>
+              <p className="text-xs font-medium text-neutral-500">
+                Updated {dashboardData ? formatLastUpdated(dashboardData.last_updated) : 'recently'}
+              </p>
             </div>
           }
-          footer={<span className="text-xs text-neutral-400">Synthetic data for demonstration purposes.</span>}
+          footer={<span className="text-xs text-neutral-400">Data from API</span>}
         >
           <div className="grid gap-4 md:grid-cols-2">
             {reportHighlights.map((item) => (
