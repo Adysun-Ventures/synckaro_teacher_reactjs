@@ -4,6 +4,8 @@ import {
   useState,
   useEffect,
   useMemo,
+  useCallback,
+  useRef,
   type ChangeEvent,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -38,11 +40,18 @@ import {
 import { cn } from "@/lib/utils";
 import { isAuthenticated, getCurrentUser } from "@/services/authService";
 import {
-  getStudents,
   toggleStudentStatus,
   deleteStudent,
 } from "@/services/studentService";
 import { Student } from "@/types";
+import apiClient from "@/lib/api";
+
+interface StudentApiResponse {
+  student_id: number;
+  name: string;
+  status: "active" | "inactive";
+  last_active: string;
+}
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 300];
 
@@ -56,9 +65,12 @@ const formatCurrency = (amount: number) =>
 export default function StudentsPage() {
   const router = useRouter();
   const user = getCurrentUser();
+  const teacherIdNum = user?.id ? parseInt(user.id, 10) : null;
   const teacherId = user?.id || "";
 
   const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
@@ -69,6 +81,7 @@ export default function StudentsPage() {
   const [bulkStatusConfirm, setBulkStatusConfirm] = useState<
     "active" | "inactive" | null
   >(null);
+  const hasFetchedRef = useRef(false);
 
   // Check auth
   useEffect(() => {
@@ -77,13 +90,67 @@ export default function StudentsPage() {
     }
   }, [router]);
 
-  // Load students for teacher
-  useEffect(() => {
-    if (teacherId) {
-      const teacherStudents = getStudents(teacherId);
-      setStudents(teacherStudents);
+  // Fetch students from API
+  const fetchStudents = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (hasFetchedRef.current) {
+      return;
     }
-  }, [teacherId]);
+
+    if (!teacherIdNum || isNaN(teacherIdNum)) {
+      setError("Invalid teacher ID");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      hasFetchedRef.current = true;
+      setLoading(true);
+      setError(null);
+
+      const response = await apiClient.post<{
+        status: string;
+        data: StudentApiResponse[];
+      }>("/teacher/students_list", {
+        teacher_id: teacherIdNum,
+      });
+
+      if (response.data && response.data.status === "success" && response.data.data) {
+        // Map API response to Student type
+        const mappedStudents: Student[] = response.data.data.map((apiStudent) => ({
+          id: String(apiStudent.student_id),
+          name: apiStudent.name,
+          email: "", // Not provided by API
+          mobile: "", // Not provided by API
+          teacherId: teacherId,
+          status: apiStudent.status,
+          initialCapital: 0, // Not provided by API
+          currentCapital: 0, // Not provided by API
+          profitLoss: 0, // Not provided by API
+          riskPercentage: 10, // Default
+          strategy: "", // Not provided by API
+          joinedDate: apiStudent.last_active || new Date().toISOString(),
+        }));
+
+        setStudents(mappedStudents);
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (err: any) {
+      console.error("Error fetching students:", err);
+      setError(err?.error || err?.message || "Failed to load students");
+      hasFetchedRef.current = false; // Allow retry on error
+    } finally {
+      setLoading(false);
+    }
+  }, [teacherIdNum, teacherId]);
+
+  // Load students on mount
+  useEffect(() => {
+    if (isAuthenticated() && teacherIdNum) {
+      fetchStudents();
+    }
+  }, [teacherIdNum, fetchStudents]);
 
   // Filter students based on search
   const filteredStudents = useMemo(() => {
@@ -93,8 +160,8 @@ export default function StudentsPage() {
     return students.filter(
       (student) =>
         student.name.toLowerCase().includes(query) ||
-        student.email.toLowerCase().includes(query) ||
-        student.mobile.toLowerCase().includes(query)
+        (student.email && student.email.toLowerCase().includes(query)) ||
+        (student.mobile && student.mobile.toLowerCase().includes(query))
     );
   }, [students, searchQuery]);
 
@@ -214,6 +281,41 @@ export default function StudentsPage() {
 
   if (!isAuthenticated()) {
     return null;
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout title="Students">
+        <Card padding="lg" className="border border-neutral-200 bg-white">
+          <div className="flex items-center justify-center h-64">
+            <p className="text-neutral-500">Loading students...</p>
+          </div>
+        </Card>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout title="Students">
+        <Card padding="lg" className="border border-neutral-200 bg-white">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-danger-600 mb-2">{error}</p>
+              <button
+                onClick={() => {
+                  hasFetchedRef.current = false;
+                  fetchStudents();
+                }}
+                className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </Card>
+      </DashboardLayout>
+    );
   }
 
   return (
@@ -360,10 +462,10 @@ export default function StudentsPage() {
                         {student.name}
                       </TableCell>
                       <TableCell className="text-neutral-600">
-                        {student.email}
+                        {student.email || "-"}
                       </TableCell>
                       <TableCell className="text-neutral-600">
-                        {student.mobile}
+                        {student.mobile || "-"}
                       </TableCell>
                       <TableCell className="text-right font-medium text-neutral-900">
                         {formatCurrency(student.currentCapital || student.initialCapital || 0)}
